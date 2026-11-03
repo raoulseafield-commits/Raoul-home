@@ -49,7 +49,7 @@ import za.co.dipixel.launcher.data.Show
 import za.co.dipixel.launcher.data.TvApp
 import za.co.dipixel.launcher.data.Wallpapers
 
-private val sections = listOf("Profiles & shows", "Apps row", "Wallpapers", "Clock & weather", "System")
+private val sections = listOf("Profiles & shows", "Apps row", "Wallpapers", "Clock & weather", "Phone remote", "System")
 
 @Composable
 fun SettingsScreen(config: Config, apps: List<TvApp>, onConfig: (Config) -> Unit) {
@@ -75,6 +75,7 @@ fun SettingsScreen(config: Config, apps: List<TvApp>, onConfig: (Config) -> Unit
                 1 -> AppsSection(config, apps, onConfig)
                 2 -> WallpapersSection(config, onConfig)
                 3 -> ClockSection(config, onConfig)
+                4 -> PhoneRemoteSection()
                 else -> SystemSection()
             }
         }
@@ -277,6 +278,32 @@ private fun ClockSection(config: Config, onConfig: (Config) -> Unit) {
                     if (la != null && lo != null) onConfig(config.copy(latitude = la, longitude = lo))
                 })
             }
+        }
+    }
+}
+
+// ---------------- Phone remote ----------------
+
+@Composable
+private fun PhoneRemoteSection() {
+    val context = LocalContext.current
+    var code by remember { mutableStateOf(za.co.dipixel.launcher.hub.Pairing.code(context)) }
+    val ip = remember { za.co.dipixel.launcher.hub.Pairing.localIp() }
+    val paired = remember(code) { za.co.dipixel.launcher.hub.Pairing.pairedCount(context) }
+    LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp), contentPadding = PaddingValues(bottom = 40.dp)) {
+        item { SectionTitle("PAIRING CODE") }
+        item { Text(code, color = Palette.text, fontSize = 72.sp, fontWeight = FontWeight.Light, letterSpacing = 12.sp) }
+        item { Text("Open Dipixel Remote on a phone on the same Wi-Fi and enter this code once.", color = Palette.textDim, fontSize = 15.sp) }
+        item { Text("TV address: $ip  ·  phones paired: $paired", color = Palette.textFaint, fontSize = 13.sp) }
+        item {
+            Spacer(Modifier.height(8.dp))
+            ActionButton("New code (unpairs all phones)", { code = za.co.dipixel.launcher.hub.Pairing.newCode(context) }, Modifier.width(360.dp))
+        }
+        item {
+            Spacer(Modifier.height(16.dp))
+            SectionTitle("GET THE PHONE APP")
+            Text("On each phone open: github.com/raoulseafield-commits/Raoul-home/releases", color = Palette.textDim, fontSize = 14.sp)
+            Text("Download remote.apk and install it.", color = Palette.textFaint, fontSize = 13.sp)
         }
     }
 }
