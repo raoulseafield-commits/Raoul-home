@@ -40,7 +40,13 @@ Log ("APK size: {0:N0} bytes" -f (Get-Item $apk).Length)
 & $adb start-server 2>$null | Out-Null
 $ipFile = Join-Path $dir "box_ip.txt"
 $ip = $null
-if (Test-Path $ipFile) { $ip = (Get-Content $ipFile -Raw).Trim(); Log "Using IP from box_ip.txt: $ip" }
+$myNets = @(Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -notlike "127.*" -and $_.IPAddress -notlike "169.254.*" } | ForEach-Object { ($_.IPAddress -split "\.")[0..2] -join "." })
+if (Test-Path $ipFile) {
+    $saved = (Get-Content $ipFile -Raw).Trim()
+    $savedNet = ($saved -split "\.")[0..2] -join "."
+    if ($myNets -contains $savedNet) { $ip = $saved; Log "Using IP from box_ip.txt: $ip" }
+    else { Log "Saved box IP $saved is on another network than this PC ($($myNets -join ', ')). Ignoring it and scanning instead." }
+}
 if (-not $ip) {
     Log "Scanning your network for a TV box with network debugging on (port 5555)..."
     $local = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -notlike "127.*" -and $_.IPAddress -notlike "169.254.*" -and $_.PrefixOrigin -ne "WellKnown" } | Select-Object -First 1).IPAddress
