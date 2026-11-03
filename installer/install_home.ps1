@@ -127,4 +127,9 @@ if ($focus -match $pkg) {
     Log "Rolled back. Details: $focus"
     exit 1
 }
+# Screensaver: Dipixel Art
+& $adb shell settings put secure screensaver_enabled 1 | Out-Null
+& $adb shell settings put secure screensaver_components "$pkg/$pkg.art.ArtDream" | Out-Null
+& $adb shell settings put secure screensaver_default_component "$pkg/$pkg.art.ArtDream" | Out-Null
+Log ("Screensaver set to: " + (& $adb shell settings get secure screensaver_components))
 Log "Done. Press Home on the remote."

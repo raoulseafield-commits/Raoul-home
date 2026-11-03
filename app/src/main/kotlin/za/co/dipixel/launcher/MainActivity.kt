@@ -33,7 +33,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         config = ConfigStore.load(this)
         za.co.dipixel.launcher.hub.HubService.start(this)
         sleeping = intent?.getBooleanExtra(Sleep.EXTRA_SLEEP, false) == true

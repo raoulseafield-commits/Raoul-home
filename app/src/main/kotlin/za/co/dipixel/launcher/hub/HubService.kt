@@ -47,6 +47,7 @@ class HubService : Service() {
         } catch (e: Exception) { }
         // Warm up adb now so the one-time "Allow debugging?" prompt shows while someone is at the TV
         Thread { Shell.run(applicationContext, "echo ok") }.start()
+        za.co.dipixel.launcher.art.ArtRepo.refreshIfDue(applicationContext)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int = START_STICKY

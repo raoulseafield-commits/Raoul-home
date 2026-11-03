@@ -24,6 +24,9 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      - name: Bake in starter art (public domain, Art Institute of Chicago)
+        run: python3 tools/fetch_art.py app/src/main/assets/art || echo "Art download failed, building without starter art"
+
       - name: Build release APK
         run: |
           chmod +x gradlew

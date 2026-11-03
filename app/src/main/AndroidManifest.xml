@@ -82,6 +82,17 @@
                 android:value="Phone remote control hub on the home network" />
         </service>
 
+        <service
+            android:name=".art.ArtDream"
+            android:exported="true"
+            android:label="Dipixel Art"
+            android:permission="android.permission.BIND_DREAM_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.dreams.DreamService" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </service>
+
         <receiver android:name=".hub.BootReceiver" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
