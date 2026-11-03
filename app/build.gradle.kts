@@ -46,6 +46,8 @@ android {
     packaging {
         resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
         resources.excludes += "/META-INF/versions/9/OSGI-INF/MANIFEST.MF"
+        resources.excludes += "/META-INF/LICENSE*"
+        resources.excludes += "/META-INF/NOTICE*"
     }
 }
 
@@ -63,5 +65,12 @@ dependencies {
     implementation("androidx.tv:tv-material:1.0.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
     implementation("org.nanohttpd:nanohttpd:2.3.1")
-    implementation("dev.mobile:dadb:1.2.7")
+    implementation("dev.mobile:dadb:1.2.7") {
+        // dadb's published pom leaks its test libraries into runtime
+        exclude(group = "org.junit.jupiter")
+        exclude(group = "org.junit.platform")
+        exclude(group = "junit")
+        exclude(group = "org.opentest4j")
+        exclude(group = "org.apiguardian")
+    }
 }
