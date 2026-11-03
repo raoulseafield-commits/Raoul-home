@@ -91,6 +91,18 @@ class MainActivity : ComponentActivity() {
             if (event.action == KeyEvent.ACTION_UP) sleeping = false
             return true
         }
+        // Hardware buttons on the Xiaomi remote that the stock launcher used to handle
+        if (event.action == KeyEvent.ACTION_UP) {
+            when (event.keyCode) {
+                KeyEvent.KEYCODE_SETTINGS, KeyEvent.KEYCODE_MENU -> { Apps.openSystemSettings(this); return true }
+                KeyEvent.KEYCODE_TV_INPUT -> {
+                    try { startActivity(Intent("android.settings.INPUT_SETTINGS").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+                    catch (e: Exception) { Apps.openSystemSettings(this) }
+                    return true
+                }
+                KeyEvent.KEYCODE_ALL_APPS -> { screen = Screen.AllApps; return true }
+            }
+        }
         return super.dispatchKeyEvent(event)
     }
 }
