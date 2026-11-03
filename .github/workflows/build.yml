@@ -32,12 +32,15 @@ jobs:
           chmod +x gradlew
           ./gradlew --no-daemon assembleRelease
           cp app/build/outputs/apk/release/app-release.apk home.apk
+          cp remote/build/outputs/apk/release/remote-release.apk remote.apk
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: home-apk
-          path: home.apk
+          path: |
+            home.apk
+            remote.apk
 
       - name: Publish to the "latest" release (stable download link)
         if: github.ref == 'refs/heads/main'
@@ -45,6 +48,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete latest --yes --cleanup-tag 2>/dev/null || true
-          gh release create latest home.apk \
+          gh release create latest home.apk remote.apk \
             --title "Dipixel Home (latest)" \
-            --notes "Built from ${GITHUB_SHA::7}. Download home.apk and install on the Xiaomi Box."
+            --notes "Built from ${GITHUB_SHA::7}. home.apk goes on the Xiaomi Box (use the installer). remote.apk goes on each Android phone."

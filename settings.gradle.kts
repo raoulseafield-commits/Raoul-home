@@ -14,3 +14,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "MiBoxLauncher"
 include(":app")
+include(":remote")
