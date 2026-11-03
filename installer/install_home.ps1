@@ -64,12 +64,17 @@ if (-not $ip) {
 }
 
 # 4. Connect (the TV may show an 'Allow debugging?' prompt: tick Always allow, press OK)
+$pcIps = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -notlike "127.*" -and $_.IPAddress -notlike "169.254.*" } | ForEach-Object { $_.IPAddress }) -join ", "
+Log "This PC's IPv4 addresses: $pcIps   (box is $ip, they must share the first three numbers)"
+$ping = Test-Connection $ip -Count 1 -Quiet -ErrorAction SilentlyContinue
+Log ("Ping to the box: " + $(if ($ping) { "OK" } else { "no reply (wrong network, or the box blocks ping)" }))
 $ok = $false
 for ($i = 0; $i -lt 24; $i++) {
-    $out = & $adb connect "$ip`:5555" 2>&1
-    $state = (& $adb devices 2>&1 | Select-String "$ip").ToString()
-    if ($state -match "\sdevice$") { $ok = $true; break }
-    if ($state -match "unauthorized") { Log "Waiting for you to press OK on the 'Allow debugging' prompt on the TV..." }
+    $out = (& $adb connect "$ip`:5555" 2>&1 | Out-String).Trim()
+    $state = (& $adb devices 2>&1 | Out-String)
+    $line = ($state -split "`n" | Where-Object { $_ -match [regex]::Escape($ip) } | Select-Object -First 1)
+    if ($line -and $line -match "\sdevice\s*$") { $ok = $true; break }
+    if ($line -and $line -match "unauthorized") { Log "Waiting for you to press OK on the 'Allow debugging' prompt on the TV..." }
     else { Log "Connecting... ($out)" }
     Start-Sleep 5
 }
