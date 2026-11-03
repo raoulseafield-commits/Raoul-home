@@ -19,7 +19,9 @@ object Injector {
         close()
         val apk = context.applicationInfo.sourceDir
         val main = InjectorMain::class.java.name
-        val cmd = "pkill -f $main; sleep 0.3; (CLASSPATH=${Shell.quote(apk)} nohup app_process /system/bin $main >/dev/null 2>&1 &)"
+        // the [M] stops pkill matching this very shell command and killing itself
+        val pattern = main.replace("InjectorMain", "Injector[M]ain")
+        val cmd = "pkill -f '$pattern'; sleep 0.3; (CLASSPATH=${Shell.quote(apk)} nohup app_process /system/bin $main </dev/null >/dev/null 2>&1 &)"
         Shell.run(context, cmd) ?: return false
         for (i in 0 until 20) {
             Thread.sleep(150)
