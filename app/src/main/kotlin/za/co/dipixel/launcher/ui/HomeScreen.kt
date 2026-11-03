@@ -107,6 +107,7 @@ fun HomeScreen(
     }
 
     var nightMenu by remember { mutableStateOf(false) }
+    var appMenu by remember { mutableStateOf<TvApp?>(null) }
     val firstFocus = remember { FocusRequester() }
     LaunchedEffect(Unit) { try { firstFocus.requestFocus() } catch (e: Exception) {} }
 
@@ -195,7 +196,9 @@ fun HomeScreen(
             // ---- apps row ----
             val favourites = remember(config.favouriteApps, apps) { favouriteApps(config, apps) }
             LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp), contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp)) {
-                items(favourites, key = { it.packageName }) { app -> AppTile(app, onClick = { Apps.launch(context, app.packageName) }) }
+                items(favourites, key = { it.packageName }) { app ->
+                    AppTile(app, onClick = { Apps.launch(context, app.packageName) }, onLongClick = { appMenu = app })
+                }
                 item {
                     Tile(onClick = onOpenAllApps, modifier = Modifier.width(150.dp).height(72.dp)) {
                         Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
@@ -211,6 +214,25 @@ fun HomeScreen(
         // ---- night mode overlay (dim + warm) ----
         if (config.nightMode) {
             Box(Modifier.fillMaxSize().background(Color(0x8C1A0A00)))
+        }
+
+        // ---- app menu (hold OK on a home row app) ----
+        val menuApp = appMenu
+        AnimatedVisibility(visible = menuApp != null, enter = fadeIn(), exit = fadeOut(), modifier = Modifier.align(Alignment.BottomEnd)) {
+            if (menuApp != null) {
+                val order = favourites.map { it.packageName }
+                val idx = order.indexOf(menuApp.packageName)
+                fun saveOrder(newOrder: List<String>) { onConfig(config.copy(favouriteApps = newOrder)) }
+                AppMenu(
+                    app = menuApp,
+                    canLeft = idx > 0,
+                    canRight = idx >= 0 && idx < order.lastIndex,
+                    onLeft = { saveOrder(order.toMutableList().apply { add(idx - 1, removeAt(idx)) }) },
+                    onRight = { saveOrder(order.toMutableList().apply { add(idx + 1, removeAt(idx)) }) },
+                    onUnpin = { saveOrder(order - menuApp.packageName); appMenu = null },
+                    onClose = { appMenu = null }
+                )
+            }
         }
 
         // ---- night menu ----
@@ -336,6 +358,35 @@ private fun MenuRow(label: String, onClick: () -> Unit, modifier: Modifier = Mod
         Box(Modifier.fillMaxSize().padding(horizontal = 12.dp), contentAlignment = Alignment.CenterStart) {
             Text(label, color = Palette.text, fontSize = 15.sp)
         }
+    }
+}
+
+@Composable
+private fun AppMenu(
+    app: TvApp,
+    canLeft: Boolean,
+    canRight: Boolean,
+    onLeft: () -> Unit,
+    onRight: () -> Unit,
+    onUnpin: () -> Unit,
+    onClose: () -> Unit
+) {
+    val focus = remember { FocusRequester() }
+    LaunchedEffect(app.packageName) { try { focus.requestFocus() } catch (e: Exception) {} }
+    Column(
+        Modifier
+            .padding(bottom = 110.dp, end = 48.dp)
+            .width(260.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .background(Color(0xE6141418))
+            .padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Text(app.label, color = Palette.text, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, modifier = Modifier.padding(start = 6.dp, bottom = 4.dp))
+        if (canLeft) MenuRow("Move left", onLeft, Modifier.focusRequester(focus))
+        if (canRight) MenuRow("Move right", onRight, if (canLeft) Modifier else Modifier.focusRequester(focus))
+        MenuRow("Unpin from home", onUnpin)
+        MenuRow("Done", onClose)
     }
 }
 

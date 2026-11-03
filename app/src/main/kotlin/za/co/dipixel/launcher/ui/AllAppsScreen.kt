@@ -29,7 +29,7 @@ fun AllAppsScreen(config: Config, apps: List<TvApp>, onConfig: (Config) -> Unit)
     val context = LocalContext.current
     Column(Modifier.fillMaxSize().background(Color(0xFF0E0E12)).padding(horizontal = 48.dp, vertical = 32.dp)) {
         Text("All apps", color = Palette.text, fontSize = 30.sp, fontWeight = FontWeight.SemiBold)
-        Text("Hold OK on an app to pin or unpin it from the home row", color = Palette.textFaint, fontSize = 14.sp)
+        Text("Hold OK on an app to pin it to the home row. On the home row, hold OK to move or unpin it", color = Palette.textFaint, fontSize = 14.sp)
         Spacer(Modifier.height(20.dp))
         LazyVerticalGrid(
             columns = GridCells.Adaptive(150.dp),
