@@ -124,7 +124,7 @@ fun HomeScreen(
             )
         )
 
-        Column(Modifier.fillMaxSize().padding(horizontal = 48.dp, vertical = 28.dp)) {
+        Column(Modifier.fillMaxSize().padding(horizontal = 48.dp, vertical = 20.dp)) {
             // ---- top bar ----
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -164,7 +164,7 @@ fun HomeScreen(
                     now.format(DateTimeFormatter.ofPattern(pattern)),
                     style = TextStyle(
                         brush = Brush.verticalGradient(listOf(Color(0xFFFFFFFF), Color(0xFFF2C6E0))),
-                        fontSize = 170.sp,
+                        fontSize = 118.sp,
                         fontWeight = FontWeight.Light,
                         letterSpacing = (-4).sp
                     ),
@@ -181,7 +181,7 @@ fun HomeScreen(
             LazyRow(horizontalArrangement = Arrangement.spacedBy(14.dp), contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp)) {
                 items(profile.shows) { show -> ShowTile(show, apps, onClick = { Apps.openShow(context, show) }) }
                 item {
-                    Tile(onClick = onOpenSettings, modifier = Modifier.width(240.dp).height(120.dp), container = Color(0x1FFFFFFF)) {
+                    Tile(onClick = onOpenSettings, modifier = Modifier.width(220.dp).height(100.dp), container = Color(0x1FFFFFFF)) {
                         Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                             Icon(Icons.Rounded.Add, contentDescription = null, tint = Palette.textDim, modifier = Modifier.size(28.dp))
                             Text("Add a show", color = Palette.textDim, fontSize = 14.sp)
@@ -197,7 +197,7 @@ fun HomeScreen(
             LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp), contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp)) {
                 items(favourites, key = { it.packageName }) { app -> AppTile(app, onClick = { Apps.launch(context, app.packageName) }) }
                 item {
-                    Tile(onClick = onOpenAllApps, modifier = Modifier.width(150.dp).height(84.dp)) {
+                    Tile(onClick = onOpenAllApps, modifier = Modifier.width(150.dp).height(72.dp)) {
                         Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Rounded.Apps, contentDescription = null, tint = Palette.text)
                             Spacer(Modifier.width(8.dp))
@@ -248,7 +248,7 @@ fun weatherIcon(w: WeatherNow): ImageVector = when (w.code) {
 @Composable
 fun ShowTile(show: Show, apps: List<TvApp>, onClick: () -> Unit) {
     val provider = remember(show.providerPackage, apps) { apps.firstOrNull { it.packageName == show.providerPackage } }
-    Tile(onClick = onClick, modifier = Modifier.width(240.dp).height(120.dp), container = Color(0xFF1C1C22), focusedContainer = Color(0xFF2A2A33)) {
+    Tile(onClick = onClick, modifier = Modifier.width(220.dp).height(100.dp), container = Color(0xFF1C1C22), focusedContainer = Color(0xFF2A2A33)) {
         Box(Modifier.fillMaxSize()) {
             provider?.banner?.let { DrawableImage(it, Modifier.fillMaxSize(), ContentScale.Crop) }
             Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color(0x66000000), Color(0xE6000000)))))
@@ -267,7 +267,7 @@ fun ShowTile(show: Show, apps: List<TvApp>, onClick: () -> Unit) {
 
 @Composable
 fun AppTile(app: TvApp, onClick: () -> Unit, onLongClick: (() -> Unit)? = null) {
-    Tile(onClick = onClick, onLongClick = onLongClick, modifier = Modifier.width(150.dp).height(84.dp), container = Color(0xFF1C1C22), focusedContainer = Color(0xFF1C1C22)) {
+    Tile(onClick = onClick, onLongClick = onLongClick, modifier = Modifier.width(150.dp).height(72.dp), container = Color(0xFF1C1C22), focusedContainer = Color(0xFF1C1C22)) {
         val banner = app.banner
         if (banner != null) {
             DrawableImage(banner, Modifier.fillMaxSize(), ContentScale.Crop)
