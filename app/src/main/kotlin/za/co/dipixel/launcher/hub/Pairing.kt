@@ -19,11 +19,15 @@ object Pairing {
         return c
     }
 
+    /** New code for pairing more phones. Phones that are already paired stay paired. */
     fun newCode(context: Context): String {
         val c = Random.nextInt(1000, 10000).toString()
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
-            .putString("code", c).putStringSet("tokens", emptySet()).apply()
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString("code", c).apply()
         return c
+    }
+
+    fun unpairAll(context: Context) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putStringSet("tokens", emptySet()).apply()
     }
 
     fun pair(context: Context, code: String): String? {

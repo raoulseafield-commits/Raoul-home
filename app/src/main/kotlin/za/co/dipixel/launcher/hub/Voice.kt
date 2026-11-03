@@ -104,7 +104,7 @@ object Voice {
         return play(context, app, query)
     }
 
-    private fun play(context: Context, app: TvApp, query: String): String {
+    fun play(context: Context, app: TvApp, query: String): String {
         val pkg = app.packageName
         val q = URLEncoder.encode(query, "UTF-8")
 

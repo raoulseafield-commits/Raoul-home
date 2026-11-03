@@ -12,6 +12,9 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import za.co.dipixel.launcher.data.Artwork
 import za.co.dipixel.launcher.data.Apps
 import za.co.dipixel.launcher.data.Config
 import za.co.dipixel.launcher.data.ConfigStore
@@ -36,6 +39,8 @@ class MainActivity : ComponentActivity() {
         config = ConfigStore.load(this)
         za.co.dipixel.launcher.hub.HubService.start(this)
         sleeping = intent?.getBooleanExtra(Sleep.EXTRA_SLEEP, false) == true
+        // changes made from a phone (profile, shows, night mode) show up instantly
+        lifecycleScope.launch { ConfigStore.flow.collect { if (it != null) config = it } }
 
         setContent {
             MaterialTheme(colorScheme = darkColorScheme()) {
@@ -81,10 +86,38 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        za.co.dipixel.launcher.hub.HubService.start(this)
         // Re-read config (sleep timer may have changed it) and refresh the app list
         config = ConfigStore.load(this)
         Thread { val list = Apps.installed(this); runOnUiThread { apps = list } }.start()
+        fillArtwork()
     }
+
+    /** Fetch backdrops and posters for any show that doesn't have them yet. */
+    private fun fillArtwork() {
+        if (artworkRunning) return
+        artworkRunning = true
+        Thread {
+            try {
+                val c = ConfigStore.load(this)
+                c.profiles.forEachIndexed { pi, p ->
+                    p.shows.forEachIndexed { si, s ->
+                        if (s.backdrop.isBlank() && s.poster.isBlank()) {
+                            val full = Artwork.enrich(s)
+                            if (full != s) ConfigStore.update(this) { cur ->
+                                cur.copy(profiles = cur.profiles.mapIndexed { i, pr ->
+                                    if (i == pi) pr.copy(shows = pr.shows.mapIndexed { j, sh -> if (j == si && sh.title == s.title) full else sh }) else pr
+                                })
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) { }
+            artworkRunning = false
+        }.start()
+    }
+
+    @Volatile private var artworkRunning = false
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         if (sleeping) {

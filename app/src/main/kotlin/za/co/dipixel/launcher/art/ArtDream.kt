@@ -19,7 +19,7 @@ import za.co.dipixel.launcher.data.Wallpapers
 import java.io.InputStream
 import kotlin.random.Random
 
-/** "Dipixel Art" screensaver: museum paintings, slow pan and zoom, small clock, title and artist. */
+/** "Mi TV Art" screensaver: museum paintings, slow pan and zoom, small clock, title and artist. */
 class ArtDream : DreamService() {
 
     private val handler = Handler(Looper.getMainLooper())

@@ -49,7 +49,7 @@ import za.co.dipixel.launcher.data.Show
 import za.co.dipixel.launcher.data.TvApp
 import za.co.dipixel.launcher.data.Wallpapers
 
-private val sections = listOf("Profiles & shows", "Apps row", "Wallpapers", "Clock & weather", "Phone remote", "System")
+private val sections = listOf("Profiles & shows", "Apps row", "Clock & weather", "Mi Remote", "System")
 
 @Composable
 fun SettingsScreen(config: Config, apps: List<TvApp>, onConfig: (Config) -> Unit) {
@@ -73,9 +73,8 @@ fun SettingsScreen(config: Config, apps: List<TvApp>, onConfig: (Config) -> Unit
             when (section) {
                 0 -> ProfilesSection(config, apps, onConfig)
                 1 -> AppsSection(config, apps, onConfig)
-                2 -> WallpapersSection(config, onConfig)
-                3 -> ClockSection(config, onConfig)
-                4 -> PhoneRemoteSection()
+                2 -> ClockSection(config, onConfig)
+                3 -> PhoneRemoteSection()
                 else -> SystemSection()
             }
         }
@@ -293,17 +292,17 @@ private fun PhoneRemoteSection() {
     LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp), contentPadding = PaddingValues(bottom = 40.dp)) {
         item { SectionTitle("PAIRING CODE") }
         item { Text(code, color = Palette.text, fontSize = 72.sp, fontWeight = FontWeight.Light, letterSpacing = 12.sp) }
-        item { Text("Open Dipixel Remote on a phone on the same Wi-Fi and enter this code once.", color = Palette.textDim, fontSize = 15.sp) }
+        item { Text("Open Mi Remote on a phone on the same Wi-Fi and enter this code once.", color = Palette.textDim, fontSize = 15.sp) }
         item { Text("TV address: $ip  ·  phones paired: $paired", color = Palette.textFaint, fontSize = 13.sp) }
         item {
             Spacer(Modifier.height(8.dp))
-            ActionButton("New code (unpairs all phones)", { code = za.co.dipixel.launcher.hub.Pairing.newCode(context) }, Modifier.width(360.dp))
+            ActionButton("New code (paired phones stay connected)", { code = za.co.dipixel.launcher.hub.Pairing.newCode(context) }, Modifier.width(420.dp))
         }
         item {
             Spacer(Modifier.height(16.dp))
             SectionTitle("GET THE PHONE APP")
             Text("On each phone open: github.com/raoulseafield-commits/Raoul-home/releases", color = Palette.textDim, fontSize = 14.sp)
-            Text("Download remote.apk and install it.", color = Palette.textFaint, fontSize = 13.sp)
+            Text("Download remote.apk (Mi Remote) and install it.", color = Palette.textFaint, fontSize = 13.sp)
         }
     }
 }
@@ -327,7 +326,7 @@ private fun SystemSection() {
                         }
                     }
                 }, Modifier.width(360.dp))
-                ActionButton("Screensaver settings (pick Dipixel Art, set the delay)", {
+                ActionButton("Screensaver settings (pick Mi TV Art, set the delay)", {
                     try { context.startActivity(Intent(Settings.ACTION_DREAM_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (e: Exception) { Apps.openSystemSettings(context) }
                 }, Modifier.width(560.dp))
             }
@@ -351,7 +350,7 @@ private fun SystemSection() {
         item {
             Spacer(Modifier.height(16.dp))
             SectionTitle("ABOUT")
-            Text("Dipixel Home for Xiaomi Box 4K · no ads, no tracking, no accounts.", color = Palette.textFaint, fontSize = 13.sp)
+            Text("Mi TV for Xiaomi Box 4K · no ads, no tracking, no accounts.", color = Palette.textFaint, fontSize = 13.sp)
             Text("Press Back to return home.", color = Palette.textFaint, fontSize = 13.sp)
         }
     }

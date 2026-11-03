@@ -4,25 +4,40 @@ import android.content.Context
 import org.json.JSONArray
 import org.json.JSONObject
 
-/** One tile in the "shows" row. If [url] is blank the provider app is simply opened. */
+/** One tile in the "continue watching" row. If [url] is blank the show is found by title in its app. */
 data class Show(
     val title: String,
     val providerPackage: String,
     val providerLabel: String,
-    val url: String = ""
+    val url: String = "",
+    /** Landscape backdrop for the full screen hero (may be blank). */
+    val backdrop: String = "",
+    /** Portrait poster (may be blank). */
+    val poster: String = "",
+    val summary: String = "",
+    /** e.g. "2019 · Drama, Thriller" */
+    val meta: String = ""
 ) {
     fun toJson(): JSONObject = JSONObject()
         .put("title", title)
         .put("pkg", providerPackage)
         .put("label", providerLabel)
         .put("url", url)
+        .put("backdrop", backdrop)
+        .put("poster", poster)
+        .put("summary", summary)
+        .put("meta", meta)
 
     companion object {
         fun fromJson(o: JSONObject) = Show(
             title = o.optString("title"),
             providerPackage = o.optString("pkg"),
             providerLabel = o.optString("label"),
-            url = o.optString("url")
+            url = o.optString("url"),
+            backdrop = o.optString("backdrop"),
+            poster = o.optString("poster"),
+            summary = o.optString("summary"),
+            meta = o.optString("meta")
         )
     }
 }
@@ -127,6 +142,9 @@ object ConfigStore {
     private const val PREFS = "launcher"
     private const val KEY = "config"
 
+    /** Every save lands here, so the TV screen updates the moment a phone changes something. */
+    val flow = kotlinx.coroutines.flow.MutableStateFlow<Config?>(null)
+
     fun load(context: Context): Config {
         val raw = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY, null)
         return try {
@@ -139,5 +157,13 @@ object ConfigStore {
     fun save(context: Context, config: Config) {
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
             .edit().putString(KEY, config.toJson().toString()).apply()
+        flow.value = config
+    }
+
+    @Synchronized
+    fun update(context: Context, change: (Config) -> Config): Config {
+        val c = change(load(context))
+        save(context, c)
+        return c
     }
 }

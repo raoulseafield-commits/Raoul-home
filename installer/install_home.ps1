@@ -1,4 +1,4 @@
-# Dipixel Home installer for the Xiaomi Box 4K (2nd Gen, Google TV)
+# Mi TV installer for the Xiaomi Box 4K (2nd Gen, Google TV)
 # Downloads adb + the APK, finds the box on your Wi-Fi, installs, makes it Home.
 # Rolls the stock launcher back automatically if Home doesn't land on the new one.
 
@@ -12,7 +12,7 @@ $stock = @("com.google.android.apps.tv.launcherx", "com.google.android.tungsten.
 
 function Log($m) { $t = (Get-Date).ToString("HH:mm:ss"); "$t  $m" | Tee-Object -FilePath $log -Append }
 "" | Out-File $log
-Log "=== Dipixel Home installer ==="
+Log "=== Mi TV installer ==="
 
 # 1. adb
 $pt = Join-Path $dir "platform-tools"
@@ -119,15 +119,15 @@ foreach ($p in $stock) { $r = & $adb shell pm disable-user --user 0 $p 2>&1; Log
 Start-Sleep 4
 $focus = (& $adb shell dumpsys window 2>&1 | Select-String "mCurrentFocus|mFocusedApp" | Out-String)
 if ($focus -match $pkg) {
-    Log "SUCCESS. Home button now opens Dipixel Home."
+    Log "SUCCESS. Home button now opens Mi TV."
 } else {
-    Log "Home did not land on Dipixel Home. Rolling back the stock launcher."
+    Log "Home did not land on Mi TV. Rolling back the stock launcher."
     foreach ($p in $stock) { & $adb shell pm enable $p 2>&1 | Out-Null }
     & $adb shell input keyevent 3 | Out-Null
     Log "Rolled back. Details: $focus"
     exit 1
 }
-# Screensaver: Dipixel Art
+# Screensaver: Mi TV Art
 & $adb shell settings put secure screensaver_enabled 1 | Out-Null
 & $adb shell settings put secure screensaver_components "$pkg/$pkg.art.ArtDream" | Out-Null
 & $adb shell settings put secure screensaver_default_component "$pkg/$pkg.art.ArtDream" | Out-Null
