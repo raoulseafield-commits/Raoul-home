@@ -230,8 +230,29 @@ fun HomeScreen(
     }
 }
 
+/** Default home row when nothing is pinned yet: these apps, in this order, matched by name. */
+private class Slot(val exact: List<String>, val contains: List<String> = emptyList())
+private val DEFAULT_ROW = listOf(
+    Slot(listOf("netflix"), listOf("netflix")),
+    Slot(listOf("google search", "search", "google", "google assistant")),
+    Slot(listOf("dstv", "dstv now"), listOf("dstv")),
+    Slot(listOf("spotify"), listOf("spotify")),
+    Slot(listOf("youtube")),
+    Slot(listOf("youtube kids"), listOf("youtube kids"))
+)
+
+fun defaultRow(apps: List<TvApp>): List<TvApp> {
+    val out = ArrayList<TvApp>()
+    for (slot in DEFAULT_ROW) {
+        val hit = slot.exact.firstNotNullOfOrNull { k -> apps.firstOrNull { it.label.trim().equals(k, true) && it !in out } }
+            ?: slot.contains.firstNotNullOfOrNull { k -> apps.firstOrNull { it.label.contains(k, true) && it !in out } }
+        if (hit != null) out += hit
+    }
+    return out
+}
+
 fun favouriteApps(config: Config, apps: List<TvApp>): List<TvApp> {
-    if (config.favouriteApps.isEmpty()) return apps.take(8)
+    if (config.favouriteApps.isEmpty()) return defaultRow(apps).ifEmpty { apps.take(8) }
     val byPkg = apps.associateBy { it.packageName }
     return config.favouriteApps.mapNotNull { byPkg[it] }
 }

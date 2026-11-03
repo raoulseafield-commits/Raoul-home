@@ -88,6 +88,11 @@ if (-not $ok) { Log "Could not get an authorised adb connection to $ip. Accept t
 Log "Connected to the box at $ip"
 Log ("Box: " + (& $adb shell getprop ro.product.model) + " / Android " + (& $adb shell getprop ro.build.version.release))
 
+# 4b. Save a list of the launchable apps on the box (so apps can be matched by name)
+$appsFile = Join-Path $dir "box_apps.txt"
+(& $adb shell cmd package query-activities --brief -a android.intent.action.MAIN -c android.intent.category.LEANBACK_LAUNCHER 2>&1) | Out-File $appsFile
+Log "Saved the box's app list to box_apps.txt"
+
 # 5. Install
 Log "Installing home.apk..."
 $res = & $adb install -r -g $apk 2>&1
