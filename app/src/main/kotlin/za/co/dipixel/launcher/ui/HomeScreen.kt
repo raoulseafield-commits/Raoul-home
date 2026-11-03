@@ -108,6 +108,7 @@ fun HomeScreen(
 
     var nightMenu by remember { mutableStateOf(false) }
     var appMenu by remember { mutableStateOf<TvApp?>(null) }
+    val favourites = remember(config.favouriteApps, apps) { favouriteApps(config, apps) }
     val firstFocus = remember { FocusRequester() }
     LaunchedEffect(Unit) { try { firstFocus.requestFocus() } catch (e: Exception) {} }
 
@@ -194,7 +195,6 @@ fun HomeScreen(
             Spacer(Modifier.height(14.dp))
 
             // ---- apps row ----
-            val favourites = remember(config.favouriteApps, apps) { favouriteApps(config, apps) }
             LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp), contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp)) {
                 items(favourites, key = { it.packageName }) { app ->
                     AppTile(app, onClick = { Apps.launch(context, app.packageName) }, onLongClick = { appMenu = app })
@@ -220,15 +220,16 @@ fun HomeScreen(
         val menuApp = appMenu
         AnimatedVisibility(visible = menuApp != null, enter = fadeIn(), exit = fadeOut(), modifier = Modifier.align(Alignment.BottomEnd)) {
             if (menuApp != null) {
-                val order = favourites.map { it.packageName }
+                val order: List<String> = favourites.map { it.packageName }
                 val idx = order.indexOf(menuApp.packageName)
-                fun saveOrder(newOrder: List<String>) { onConfig(config.copy(favouriteApps = newOrder)) }
+                // "none" keeps the row empty instead of falling back to the default six
+                fun saveOrder(newOrder: List<String>) { onConfig(config.copy(favouriteApps = newOrder.ifEmpty { listOf("none") })) }
                 AppMenu(
                     app = menuApp,
                     canLeft = idx > 0,
                     canRight = idx >= 0 && idx < order.lastIndex,
-                    onLeft = { saveOrder(order.toMutableList().apply { add(idx - 1, removeAt(idx)) }) },
-                    onRight = { saveOrder(order.toMutableList().apply { add(idx + 1, removeAt(idx)) }) },
+                    onLeft = { val m: MutableList<String> = order.toMutableList(); m.add(idx - 1, m.removeAt(idx)); saveOrder(m) },
+                    onRight = { val m: MutableList<String> = order.toMutableList(); m.add(idx + 1, m.removeAt(idx)); saveOrder(m) },
                     onUnpin = { saveOrder(order - menuApp.packageName); appMenu = null },
                     onClose = { appMenu = null }
                 )
