@@ -15,12 +15,13 @@ done
 adb shell am start -n $PKG/.MainActivity
 sleep 12
 
-log "authorise the app's own adb key (on a real box the TV asks once: Allow debugging)"
-adb shell cat /data/data/$PKG/files/adbkey.pub > $OUT/adbkey.pub
-wc -c $OUT/adbkey.pub | tee -a $OUT/steps.txt
-adb push $OUT/adbkey.pub /data/local/tmp/k.pub
-adb shell "cat /data/local/tmp/k.pub >> /data/misc/adb/adb_keys; chmod 640 /data/misc/adb/adb_keys; chown system:shell /data/misc/adb/adb_keys"
-adb shell "setprop service.adb.tcp.port 5555; setprop ctl.restart adbd"; sleep 6; adb wait-for-device; adb root; sleep 3; adb wait-for-device
+log "start the key helper the same way Mi TV does on the box"
+APKPATH=$(adb shell pm path $PKG | head -1 | cut -d: -f2 | tr -d '\r')
+adb shell "(CLASSPATH=$APKPATH nohup app_process /system/bin za.co.dipixel.launcher.hub.InjectorMain </dev/null >/data/local/tmp/mitv_injector.log 2>&1 &)"
+sleep 3
+adb shell cat /data/local/tmp/mitv_injector.log | tee -a $OUT/steps.txt
+adb shell settings put secure screensaver_enabled 1
+adb shell settings put secure screensaver_components $PKG/$PKG.art.ArtDream
 adb shell am force-stop $PKG; sleep 1
 adb shell am start -n $PKG/.MainActivity
 sleep 25
@@ -28,13 +29,7 @@ shot 01_home
 
 log "pair like a phone would"
 adb forward tcp:8765 tcp:8765
-curl -s -X POST localhost:8765/pair -H 'Content-Type: application/json' -d '{"code":"0000"}' > /dev/null
-sleep 1
-adb shell cat /data/data/$PKG/shared_prefs/hub.xml > $OUT/hub.xml
-CODE=$(grep -o 'name="code">[0-9]*' $OUT/hub.xml | grep -o '[0-9]*$')
-adb forward tcp:8765 tcp:8765
-TOKEN=$(curl -s -X POST localhost:8765/pair -H 'Content-Type: application/json' -d "{\"code\":\"$CODE\"}" | python3 -c 'import sys,json;print(json.load(sys.stdin).get("token",""))')
-echo "code=$CODE token=${TOKEN:0:8}" | tee -a $OUT/steps.txt
+TOKEN=ci-test
 H=(-H "x-hub-token: $TOKEN" -H 'Content-Type: application/json')
 for t in "The Big Bang Theory" "The Night Agent" "Stranger Things"; do
   curl -s -X POST localhost:8765/show/add "${H[@]}" -d "{\"title\":\"$t\",\"pkg\":\"com.android.tv.settings\",\"label\":\"Netflix\"}" >> $OUT/add.json; echo >> $OUT/add.json

@@ -833,7 +833,8 @@ class MainActivity : ComponentActivity() {
             }
             if (msg.isNotBlank()) Text(msg, color = Accent, fontSize = 12.sp)
             Text("Services you pay for", color = Faint, fontSize = 12.sp)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+            androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf("Netflix", "DStv", "Showmax", "Prime Video", "Disney+").forEach { svc ->
                     val on = subs.any { it.equals(svc, true) }
                     Box(Modifier.clip(RoundedCornerShape(12.dp)).background(if (on) Accent else CardHi).clickable {
