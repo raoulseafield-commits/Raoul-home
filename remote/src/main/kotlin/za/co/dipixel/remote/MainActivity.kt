@@ -134,6 +134,7 @@ data class TvState(
     val active: Int = 0,
     val night: Boolean = false,
     val lofi: Boolean = true,
+    val lofiLevel: Int = 2,
     val sleepAt: Long = 0L,
     val nowLabel: String = "",
     val onHome: Boolean = false,
@@ -277,6 +278,7 @@ class MainActivity : ComponentActivity() {
             active = r.optInt("active"),
             night = r.optBoolean("night"),
             lofi = r.optBoolean("lofi", true),
+            lofiLevel = r.optInt("lofiLevel", 2),
             sleepAt = r.optLong("sleepAt"),
             nowLabel = r.optJSONObject("now")?.optString("label").orEmpty(),
             onHome = r.optBoolean("onHome"),
@@ -787,6 +789,15 @@ class MainActivity : ComponentActivity() {
                 }
                 Switch(checked = tv.lofi, onCheckedChange = { on -> scope.launch { hub.lofi(on); refreshState() } },
                     colors = SwitchDefaults.colors(checkedTrackColor = Accent, checkedThumbColor = Color(0xFF1A1020)))
+            }
+            Text("Lofi volume (always softer than the TV)", color = Dim, fontSize = 13.sp)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf(1 to "Whisper", 2 to "Soft", 3 to "Medium").forEach { (lv, name) ->
+                    Box(Modifier.clip(RoundedCornerShape(14.dp)).background(if (tv.lofiLevel == lv) Accent else Card)
+                        .clickable { scope.launch { hub.lofiLevel(lv); refreshState() } }.padding(horizontal = 14.dp, vertical = 10.dp)) {
+                        Text(name, color = if (tv.lofiLevel == lv) Color(0xFF1A1020) else Color.White, fontSize = 13.sp)
+                    }
+                }
             }
             if (note.isNotBlank()) Text(note, color = Faint, fontSize = 12.sp)
 

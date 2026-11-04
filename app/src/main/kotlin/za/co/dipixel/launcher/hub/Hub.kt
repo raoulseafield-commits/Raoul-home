@@ -274,7 +274,14 @@ class HubServer(private val context: Context) : NanoHTTPD(Hub.PORT) {
             }
             "/screensaver" -> json(JSONObject().put("ok", Hub.startScreensaver(context)))
             "/screensaver/skip" -> json(JSONObject().put("ok", Hub.skipAmbient(context)))
-            "/lofi" -> { ConfigStore.update(context) { it.copy(lofiRadio = body.optBoolean("on", true)) }; json(ok) }
+            "/lofi" -> {
+                ConfigStore.update(context) { c ->
+                    c.copy(lofiRadio = if (body.has("on")) body.optBoolean("on", true) else c.lofiRadio,
+                        lofiLevel = if (body.has("level")) body.optInt("level", 2).coerceIn(1, 3) else c.lofiLevel)
+                }
+                za.co.dipixel.launcher.art.Ambient.applyLevelLive(ConfigStore.load(context).lofiLevel)
+                json(ok)
+            }
             "/art/refresh" -> { ArtRepo.refreshNow(context); json(ok) }
             "/show/add" -> {
                 val show = Show(
@@ -345,6 +352,7 @@ class HubServer(private val context: Context) : NanoHTTPD(Hub.PORT) {
             .put("active", c.activeProfile)
             .put("night", c.nightMode)
             .put("lofi", c.lofiRadio)
+            .put("lofiLevel", c.lofiLevel)
             .put("sleepAt", c.sleepAt)
             .put("now", if (now != null) JSONObject().put("pkg", now.packageName).put("label", now.label) else JSONObject.NULL)
             .put("onHome", nowPkg == context.packageName)

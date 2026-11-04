@@ -104,6 +104,60 @@ class Ambient(private val context: Context, private val withRadio: Boolean) {
     fun stop() {
         handler.removeCallbacksAndMessages(null)
         player?.release(); player = null
+        if (live === this) live = null
+        restoreVolume()
+    }
+
+    // ---------------- soft volume ----------------
+    // The radio must always be gentle, even if the TV was left loud for a movie.
+    // 1) the box's own output is lowered while the art plays (and put back after),
+    // 2) the radio itself plays at a fraction of that, and fades in.
+    // When the box sends fixed volume over HDMI (TV controls the level), step 2 alone keeps it soft.
+
+    private val audio = context.getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
+    private var savedVolume = -1
+    private var setVolume = -1
+    private var gain = 0.25f
+
+    private fun levelGain(level: Int) = when (level) { 1 -> 0.12f; 3 -> 0.4f; else -> 0.22f }
+
+    private fun duckVolume() {
+        try {
+            if (audio.isVolumeFixed) return
+            val stream = android.media.AudioManager.STREAM_MUSIC
+            val max = audio.getStreamMaxVolume(stream)
+            val cur = audio.getStreamVolume(stream)
+            val target = minOf(cur, kotlin.math.ceil(max * 0.4).toInt())
+            if (target < cur) {
+                savedVolume = cur; setVolume = target
+                audio.setStreamVolume(stream, target, 0)
+            }
+        } catch (e: Exception) { }
+    }
+
+    private fun restoreVolume() {
+        try {
+            if (savedVolume < 0) return
+            val stream = android.media.AudioManager.STREAM_MUSIC
+            // only put it back if nobody changed the volume while the art was playing
+            if (audio.getStreamVolume(stream) == setVolume) audio.setStreamVolume(stream, savedVolume, 0)
+        } catch (e: Exception) { }
+        savedVolume = -1; setVolume = -1
+    }
+
+    private fun fadeIn(p: ExoPlayer) {
+        p.volume = 0f
+        val steps = 20
+        for (i in 1..steps) handler.postDelayed({ if (player === p) p.volume = gain * i / steps }, i * 200L)
+    }
+
+    companion object {
+        @Volatile private var live: Ambient? = null
+        /** Called when the level is changed from Mi Remote while the art is on screen. */
+        fun applyLevelLive(level: Int) {
+            val a = live ?: return
+            a.handler.post { a.gain = a.levelGain(level); a.player?.volume = a.gain }
+        }
     }
 
     fun handles(keyCode: Int) = keyCode in setOf(
@@ -201,7 +255,10 @@ class Ambient(private val context: Context, private val withRadio: Boolean) {
     private fun startRadio() {
         val p = ExoPlayer.Builder(context).build()
         player = p
-        p.volume = 0.8f
+        live = this
+        gain = levelGain(ConfigStore.load(context).lofiLevel)
+        duckVolume()
+        fadeIn(p)
         p.addListener(object : Player.Listener {
             override fun onMetadata(metadata: Metadata) {
                 for (i in 0 until metadata.length()) {
