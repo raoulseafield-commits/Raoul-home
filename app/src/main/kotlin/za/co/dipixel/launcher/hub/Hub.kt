@@ -227,6 +227,17 @@ class HubServer(private val context: Context) : NanoHTTPD(Hub.PORT) {
         val ok = JSONObject().put("ok", true)
         return when (path) {
             "/state" -> json(state())
+            "/agent" -> {
+                val r = Agent.ask(context, body.optString("session", "default"), body.optString("text"))
+                json(JSONObject().put("ok", true).put("reply", r.text).put("cards", r.cards))
+            }
+            "/agent/status" -> json(Agent.status(context))
+            "/agent/key" -> { Agent.setKey(context, body.optString("key")); json(Agent.status(context)) }
+            "/agent/subs" -> {
+                val arr = body.optJSONArray("subscriptions") ?: JSONArray()
+                Agent.setSubscriptions(context, (0 until arr.length()).map { arr.getString(it) }); json(Agent.status(context))
+            }
+            "/agent/reset" -> { Agent.reset(body.optString("session", "default")); json(ok) }
             "/diag" -> json(JSONObject().put("ok", true)
                 .put("adb", Shell.run(context, "echo ok")?.trim() == "ok")
                 .put("injector", Injector.running)

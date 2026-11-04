@@ -50,6 +50,11 @@ class HubClient(context: Context) {
     suspend fun removeShow(profile: Int, index: Int) = request("POST", "/show/remove", JSONObject().put("profile", profile).put("index", index))
     suspend fun addShow(show: JSONObject, play: Boolean) = request("POST", "/show/add", show.put("play", play), readTimeout = 25_000)
 
+    suspend fun agent(session: String, text: String) = request("POST", "/agent", JSONObject().put("session", session).put("text", text), readTimeout = 45_000)
+    suspend fun agentStatus() = request("GET", "/agent/status", null)
+    suspend fun setAgentKey(key: String) = request("POST", "/agent/key", JSONObject().put("key", key))
+    suspend fun setSubscriptions(list: List<String>) = request("POST", "/agent/subs", JSONObject().put("subscriptions", JSONArray(list)))
+
     fun iconUrl(pkg: String) = base() + "/icon?pkg=" + URLEncoder.encode(pkg, "UTF-8")
 
     private suspend fun request(method: String, path: String, body: JSONObject?, readTimeout: Int = 6000): JSONObject? =

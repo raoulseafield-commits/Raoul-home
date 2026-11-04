@@ -3,6 +3,9 @@ package za.co.dipixel.remote
 import android.content.Intent
 import android.os.Bundle
 import android.speech.RecognizerIntent
+import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
+import java.util.Locale
 import android.view.HapticFeedbackConstants
 import android.view.KeyEvent
 import androidx.activity.ComponentActivity
@@ -30,7 +33,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -47,6 +52,7 @@ import androidx.compose.material.icons.automirrored.rounded.Send
 import androidx.compose.material.icons.automirrored.rounded.VolumeDown
 import androidx.compose.material.icons.automirrored.rounded.VolumeOff
 import androidx.compose.material.icons.automirrored.rounded.VolumeUp
+import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Bedtime
 import androidx.compose.material.icons.rounded.FastForward
 import androidx.compose.material.icons.rounded.FastRewind
@@ -80,6 +86,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -119,6 +126,8 @@ private val Faint = Color(0x73FFFFFF)
 private val profileColors = listOf(Color(0xFFE50914), Color(0xFF2F80ED), Color(0xFFF2C94C), Color(0xFF27AE60), Color(0xFFBB6BD9))
 
 data class TvAppRef(val pkg: String, val label: String)
+data class AgentCard(val title: String, val year: Int, val poster: String, val on: List<String>, val elsewhere: List<String>)
+data class ChatMsg(val mine: Boolean, val text: String, val cards: List<AgentCard> = emptyList())
 data class ShowRef(val title: String, val pkg: String, val label: String, val image: String, val meta: String)
 data class TvState(
     val profiles: List<String> = emptyList(),
@@ -133,6 +142,7 @@ data class TvState(
 
 private enum class Tab(val label: String, val icon: ImageVector) {
     Remote("Remote", Icons.Rounded.SettingsRemote),
+    Ask("Ask", Icons.Rounded.AutoAwesome),
     Tv("TV", Icons.Rounded.Tv),
     Search("Search", Icons.Rounded.Search),
     Controls("Controls", Icons.Rounded.Tune)
@@ -152,6 +162,15 @@ class MainActivity : ComponentActivity() {
     private var heard by mutableStateOf("")
     private var lastMessage by mutableStateOf("")
     private var voiceTarget: ((String) -> Unit)? = null
+    private val chat = mutableStateListOf<ChatMsg>()
+    private var thinking by mutableStateOf(false)
+    private var handsFree by mutableStateOf(true)
+    private var tts: TextToSpeech? = null
+    private var ttsReady = false
+    private val session by lazy {
+        val p = getSharedPreferences("remote", MODE_PRIVATE)
+        p.getString("session", null) ?: java.util.UUID.randomUUID().toString().also { p.edit().putString("session", it).apply() }
+    }
 
     private val speech = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { res ->
         val said = res.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()
@@ -162,6 +181,20 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         hub = HubClient(this)
         link = ControlLink(hub)
+        tts = TextToSpeech(this) { st ->
+            ttsReady = st == TextToSpeech.SUCCESS
+            if (ttsReady) {
+                tts?.language = Locale("en", "ZA")
+                tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                    override fun onStart(id: String?) {}
+                    @Deprecated("old api") override fun onError(id: String?) {}
+                    override fun onDone(id: String?) {
+                        // the agent asked something ("want me to play it?"): listen for the answer straight away
+                        if (handsFree && id == "q") runOnUiThread { askByVoice() }
+                    }
+                })
+            }
+        }
         paired = !hub.token.isNullOrBlank() && !hub.host.isNullOrBlank()
         foundHost = hub.host
         discovery = Discovery(this) { h ->
@@ -201,10 +234,35 @@ class MainActivity : ComponentActivity() {
         try { speech.launch(i) } catch (e: Exception) { lastMessage = "Voice typing isn't available on this phone" }
     }
 
-    private fun talkToTv() = listen("Try: play Bluey on YouTube Kids") { said ->
+    private fun talkToTv() = listen("Try: what's the latest Superman movie?") { said ->
         heard = said; lastMessage = "Working on it..."
-        scope.launch { lastMessage = hub.say(said)?.optString("message")?.ifBlank { null } ?: "Couldn't reach the TV" }
+        askAgent(said) { reply -> lastMessage = reply }
     }
+
+    private fun askByVoice() = listen("Ask Mi TV anything") { askAgent(it) }
+
+    /** Send something to the Mi TV agent, show and speak the answer. */
+    private fun askAgent(text: String, onReply: ((String) -> Unit)? = null) {
+        chat.add(ChatMsg(true, text))
+        thinking = true
+        scope.launch {
+            val r = hub.agent(session, text)
+            thinking = false
+            val reply = r?.optString("reply")?.ifBlank { null } ?: "I can't reach Mi TV right now."
+            val arr = r?.optJSONArray("cards") ?: JSONArray()
+            val cards = (0 until arr.length()).map { i ->
+                val o = arr.getJSONObject(i)
+                fun list(k: String) = o.optJSONArray(k)?.let { a -> (0 until a.length()).map { a.getString(it) } } ?: emptyList()
+                AgentCard(o.optString("title"), o.optInt("year"), o.optString("poster"), list("on"), list("elsewhere"))
+            }
+            chat.add(ChatMsg(false, reply, cards))
+            onReply?.invoke(reply)
+            if (ttsReady) tts?.speak(reply, TextToSpeech.QUEUE_FLUSH, null, if (reply.trim().endsWith("?")) "q" else "a")
+            refreshState()
+        }
+    }
+
+    override fun onDestroy() { tts?.shutdown(); super.onDestroy() }
 
     private suspend fun refreshState() {
         val r = hub.state()
@@ -299,6 +357,7 @@ class MainActivity : ComponentActivity() {
             Box(Modifier.weight(1f)) {
                 when (tab) {
                     Tab.Remote -> RemoteTab()
+                    Tab.Ask -> AskTab()
                     Tab.Tv -> TvTab()
                     Tab.Search -> SearchTab()
                     Tab.Controls -> ControlsTab()
@@ -447,6 +506,70 @@ class MainActivity : ComponentActivity() {
             contentAlignment = Alignment.Center
         ) {
             Text("Swipe to move  ·  tap to select\nhold to long press", color = Faint, fontSize = 13.sp, textAlign = TextAlign.Center)
+        }
+    }
+
+    // ================================================================ Ask tab
+
+    @Composable
+    private fun AskTab() {
+        var typed by remember { mutableStateOf("") }
+        val listState = rememberLazyListState()
+        LaunchedEffect(chat.size, thinking) { if (chat.isNotEmpty()) listState.animateScrollToItem(chat.size - 1 + if (thinking) 1 else 0) }
+        Column(Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
+            LazyColumn(Modifier.weight(1f), state = listState, verticalArrangement = Arrangement.spacedBy(10.dp), contentPadding = PaddingValues(vertical = 8.dp)) {
+                if (chat.isEmpty()) item {
+                    Column(Modifier.fillMaxWidth().padding(top = 30.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(Icons.Rounded.AutoAwesome, contentDescription = null, tint = Accent, modifier = Modifier.size(42.dp))
+                        Spacer(Modifier.height(10.dp))
+                        Text("Ask Mi TV", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.height(6.dp))
+                        listOf("What's the latest Superman movie?", "Is The Night Agent on Netflix?", "Play Bluey on YouTube Kids", "Put on some Coldplay", "Sleep in 30 minutes")
+                            .forEach { ex -> Text("\u201C$ex\u201D", color = Faint, fontSize = 14.sp, modifier = Modifier.padding(3.dp).clickable { askAgent(ex) }) }
+                    }
+                }
+                items(chat.size) { i -> Bubble(chat[i]) }
+                if (thinking) item { Text("Mi TV is thinking...", color = Faint, fontSize = 13.sp, modifier = Modifier.padding(6.dp)) }
+            }
+            Row(Modifier.fillMaxWidth().padding(bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.weight(1f)) {
+                    Field(typed, "Ask anything", KeyboardType.Text, ImeAction.Send, onSend = { if (typed.isNotBlank()) { askAgent(typed); typed = "" } }) { typed = it }
+                }
+                Spacer(Modifier.width(8.dp))
+                Box(Modifier.size(56.dp).clip(CircleShape).background(Brush.linearGradient(listOf(Color(0xFF7B4FD0), Color(0xFFE0609B)))).clickable { askByVoice() },
+                    contentAlignment = Alignment.Center) { Icon(Icons.Rounded.Mic, contentDescription = "Talk", tint = Color.White, modifier = Modifier.size(28.dp)) }
+            }
+        }
+    }
+
+    @Composable
+    private fun Bubble(m: ChatMsg) {
+        Column(Modifier.fillMaxWidth(), horizontalAlignment = if (m.mine) Alignment.End else Alignment.Start) {
+            Box(
+                Modifier.clip(RoundedCornerShape(18.dp)).background(if (m.mine) Accent else Card).padding(horizontal = 14.dp, vertical = 10.dp)
+            ) { Text(m.text, color = if (m.mine) Color(0xFF1A1020) else Color.White, fontSize = 15.sp) }
+            if (m.cards.isNotEmpty()) {
+                Spacer(Modifier.height(8.dp))
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    items(m.cards.size) { i ->
+                        val c = m.cards[i]
+                        Column(Modifier.width(130.dp).clip(RoundedCornerShape(12.dp)).background(Card)
+                            .clickable { askAgent("Play ${c.title}${if (c.year > 0) " (${c.year})" else ""}") }) {
+                            Box(Modifier.fillMaxWidth().aspectRatio(2f / 3f).background(CardHi)) {
+                                if (c.poster.isNotBlank()) AsyncImage(model = c.poster, contentDescription = c.title, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                            }
+                            Column(Modifier.padding(8.dp)) {
+                                Text(c.title, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.SemiBold, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                                Text(if (c.year > 0) c.year.toString() else "", color = Faint, fontSize = 11.sp)
+                                Text(
+                                    when { c.on.isNotEmpty() -> "On ${c.on.first()}"; c.elsewhere.isNotEmpty() -> "Only on ${c.elsewhere.first()}"; else -> "Not streaming" },
+                                    color = if (c.on.isNotEmpty()) Color(0xFF5BD68A) else Faint, fontSize = 11.sp, maxLines = 1
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -657,6 +780,9 @@ class MainActivity : ComponentActivity() {
             }
             if (note.isNotBlank()) Text(note, color = Faint, fontSize = 12.sp)
 
+            SectionLabel("AI AGENT")
+            AgentSettings()
+
             SectionLabel("CONNECTION")
             Text("TV address: ${hub.host ?: "unknown"}", color = Faint, fontSize = 12.sp)
             Text("Mi Remote stays paired until you uninstall it. If the TV gets a new address it is found again automatically.", color = Faint, fontSize = 12.sp)
@@ -670,6 +796,42 @@ class MainActivity : ComponentActivity() {
             confirmButton = { TextButton(onClick = { confirmUnpair = false; hub.token = null; paired = false }) { Text("Unpair") } },
             dismissButton = { TextButton(onClick = { confirmUnpair = false }) { Text("Cancel") } }
         )
+    }
+
+    @Composable
+    private fun AgentSettings() {
+        var hasKey by remember { mutableStateOf(false) }
+        var subs by remember { mutableStateOf(listOf("Netflix", "DStv")) }
+        var key by remember { mutableStateOf("") }
+        var msg by remember { mutableStateOf("") }
+        LaunchedEffect(Unit) {
+            hub.agentStatus()?.let { st ->
+                hasKey = st.optBoolean("hasKey")
+                st.optJSONArray("subscriptions")?.let { a -> subs = (0 until a.length()).map { a.getString(it) } }
+            }
+        }
+        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Card).padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text(if (hasKey) "Gemini is connected. Ask anything in the Ask tab." else "Works now with the built-in brain. For full conversation add a free Gemini key.",
+                color = Dim, fontSize = 13.sp)
+            Text("Free key: aistudio.google.com/apikey  ·  Create API key  ·  copy it here", color = Faint, fontSize = 12.sp)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.weight(1f)) { Field(key, if (hasKey) "Replace key" else "Gemini API key", KeyboardType.Password) { key = it.trim() } }
+                TextButton(enabled = key.length > 20, onClick = {
+                    scope.launch { val r = hub.setAgentKey(key); hasKey = r?.optBoolean("hasKey") == true; key = ""; msg = if (hasKey) "Saved on the TV for everyone" else "Couldn't save" }
+                }) { Text("Save", color = Accent) }
+            }
+            if (msg.isNotBlank()) Text(msg, color = Accent, fontSize = 12.sp)
+            Text("Services you pay for", color = Faint, fontSize = 12.sp)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("Netflix", "DStv", "Showmax", "Prime Video", "Disney+").forEach { svc ->
+                    val on = subs.any { it.equals(svc, true) }
+                    Box(Modifier.clip(RoundedCornerShape(12.dp)).background(if (on) Accent else CardHi).clickable {
+                        subs = if (on) subs.filterNot { it.equals(svc, true) } else subs + svc
+                        scope.launch { hub.setSubscriptions(subs) }
+                    }.padding(horizontal = 10.dp, vertical = 8.dp)) { Text(svc, color = if (on) Color(0xFF1A1020) else Color.White, fontSize = 12.sp) }
+                }
+            }
+        }
     }
 
     // ================================================================ parts
