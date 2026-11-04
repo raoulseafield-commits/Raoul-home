@@ -24,6 +24,13 @@ object ArtRepo {
         "sunset", "japanese woodblock", "harbor", "forest", "snow", "city view", "flowers"
     )
     @Volatile private var running = false
+    /** Hand-picked masterpieces only (no random museum downloads). */
+    private const val CURATED_ONLY = true
+
+    private fun baked(context: Context): List<Art> = try {
+        val arr = JSONArray(context.assets.open("art/index.json").bufferedReader().use { it.readText() })
+        (0 until arr.length()).map { arr.getJSONObject(it) }.map { Art(it.optString("title"), it.optString("artist"), asset = it.getString("file"), mood = it.optString("mood")) }
+    } catch (e: Exception) { emptyList() }
 
     /** Picture mood for right now: season first (Halloween, Christmas), then the weather. */
     fun moodFor(weatherCode: Int?, isDay: Boolean?, date: java.time.LocalDate = java.time.LocalDate.now()): String {
@@ -54,7 +61,7 @@ object ArtRepo {
 
     /** Make sure there are pictures for this mood (downloads a batch in the background if not). */
     fun ensureMood(context: Context, mood: String) {
-        if (mood == "any" || running) return
+        if (CURATED_ONLY || mood == "any" || running) return
         if (all(context).count { it.mood == mood } >= 6) return
         running = true
         val app = context.applicationContext
@@ -69,6 +76,7 @@ object ArtRepo {
 
     fun all(context: Context): List<Art> {
         val out = ArrayList<Art>()
+        if (CURATED_ONLY) return baked(context)
         // downloaded
         try {
             val arr = JSONArray(indexFile(context).readText())
@@ -92,12 +100,14 @@ object ArtRepo {
     fun cachedCount(context: Context): Int = try { JSONArray(indexFile(context).readText()).length() } catch (e: Exception) { 0 }
 
     fun refreshIfDue(context: Context) {
+        if (CURATED_ONLY) return
         val p = context.getSharedPreferences("art", Context.MODE_PRIVATE)
         if (System.currentTimeMillis() - p.getLong("last", 0L) < REFRESH_MS) return
         refreshNow(context)
     }
 
     fun refreshNow(context: Context, onDone: ((Int) -> Unit)? = null) {
+        if (CURATED_ONLY) { onDone?.invoke(0); return }
         if (running) return
         running = true
         val app = context.applicationContext

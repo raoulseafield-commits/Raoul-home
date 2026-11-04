@@ -46,6 +46,8 @@ class HubClient(context: Context) {
     suspend fun sleep(minutes: Int) = request("POST", "/sleep", JSONObject().put("minutes", minutes))
     suspend fun screensaver() = request("POST", "/screensaver", JSONObject())
     suspend fun newArt() = request("POST", "/art/refresh", JSONObject())
+    suspend fun skipArt() = request("POST", "/screensaver/skip", JSONObject())
+    suspend fun lofi(on: Boolean) = request("POST", "/lofi", JSONObject().put("on", on))
     suspend fun playShow(profile: Int, index: Int) = request("POST", "/show/play", JSONObject().put("profile", profile).put("index", index), readTimeout = 20_000)
     suspend fun removeShow(profile: Int, index: Int) = request("POST", "/show/remove", JSONObject().put("profile", profile).put("index", index))
     suspend fun addShow(show: JSONObject, play: Boolean) = request("POST", "/show/add", show.put("play", play), readTimeout = 25_000)

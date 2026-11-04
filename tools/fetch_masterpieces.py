@@ -5,15 +5,15 @@ UA = {"User-Agent": "MiTV-personal-launcher/1.0 (home TV screensaver; github rao
 PICKS = [
  # (search, mood, artist)
  ("Van Gogh The Starry Night MoMA", "night", "Vincent van Gogh"),
- ("Van Gogh Starry Night Over the Rhone", "night", "Vincent van Gogh"),
+ ("Starry Night Over the Rhone Van Gogh 1888 Orsay", "night", "Vincent van Gogh"),
  ("Kuindzhi Moonlit Night on the Dnieper", "night", "Arkhip Kuindzhi"),
  ("Caspar David Friedrich Moonrise over the Sea", "night", "Caspar David Friedrich"),
  ("Caspar David Friedrich Two Men Contemplating the Moon", "night", "Caspar David Friedrich"),
- ("Whistler Nocturne Blue and Gold Old Battersea Bridge", "night", "James McNeill Whistler"),
+ ("Whistler Nocturne in Black and Gold The Falling Rocket", "night", "James McNeill Whistler"),
  ("Whistler Nocturne Blue and Silver Chelsea", "fog", "James McNeill Whistler"),
- ("Atkinson Grimshaw Liverpool Quay by Moonlight", "halloween", "John Atkinson Grimshaw"),
+ ("Grimshaw Liverpool Quay by Moonlight 1887", "halloween", "John Atkinson Grimshaw"),
  ("Atkinson Grimshaw Reflections on the Thames Westminster", "night", "John Atkinson Grimshaw"),
- ("Atkinson Grimshaw Autumn Glory", "halloween", "John Atkinson Grimshaw"),
+ ("Grimshaw November Moonlight", "halloween", "John Atkinson Grimshaw"),
  ("Van Gogh Wheatfield with Crows", "halloween", "Vincent van Gogh"),
  ("Aivazovsky Moonlit Seascape", "night", "Ivan Aivazovsky"),
  ("Caillebotte Paris Street Rainy Day", "rain", "Gustave Caillebotte"),
@@ -47,12 +47,20 @@ PICKS = [
  ("Bierstadt Rocky Mountains Lander's Peak", "sunny", "Albert Bierstadt"),
  ("Monet Sunrise Marine", "fog", "Claude Monet"),
 ]
+import time
 def get(u):
-    with urllib.request.urlopen(urllib.request.Request(u, headers=UA), timeout=40) as r: return r.read()
+    for attempt in range(6):
+        try:
+            with urllib.request.urlopen(urllib.request.Request(u, headers=UA), timeout=40) as r:
+                data = r.read(); time.sleep(2.5); return data
+        except urllib.error.HTTPError as e:
+            if e.code != 429: raise
+            time.sleep(15 * (attempt + 1))
+    raise Exception("rate limited")
 index = []
 for q, mood, artist in PICKS:
     url = ("https://commons.wikimedia.org/w/api.php?action=query&format=json&generator=search&gsrnamespace=6&gsrlimit=10"
-           "&prop=imageinfo&iiprop=url|size|extmetadata&iiurlwidth=2400&gsrsearch=" + urllib.parse.quote(q + " filetype:bitmap"))
+           "&prop=imageinfo&iiprop=url|size|extmetadata&iiurlwidth=1920&gsrsearch=" + urllib.parse.quote(q + " filetype:bitmap"))
     try:
         pages = sorted(json.loads(get(url)).get("query", {}).get("pages", {}).values(), key=lambda p: p.get("index", 99))
     except Exception as e:

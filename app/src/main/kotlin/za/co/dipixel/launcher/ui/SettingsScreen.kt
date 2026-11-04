@@ -290,16 +290,11 @@ private fun SystemSection() {
             }, sub = "OK skips to a new song and picture")
         }
         item {
-            var status by remember { mutableStateOf("Paintings saved on the box: ${za.co.dipixel.launcher.art.ArtRepo.cachedCount(context)} (plus the built-in set)") }
+            val status = "${za.co.dipixel.launcher.art.ArtRepo.all(context).size} hand-picked masterpieces, matched to the weather and season"
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(status, color = Palette.textFaint, fontSize = 13.sp)
-                ActionButton("Download new paintings now", {
-                    status = "Downloading..."
-                    za.co.dipixel.launcher.art.ArtRepo.refreshNow(context) { n ->
-                        android.os.Handler(android.os.Looper.getMainLooper()).post {
-                            status = if (n > 0) "Added $n paintings. Saved on the box: ${za.co.dipixel.launcher.art.ArtRepo.cachedCount(context)}" else "No new paintings (offline?)"
-                        }
-                    }
+                ActionButton("Start the art screensaver now", {
+                    context.startActivity(Intent(context, za.co.dipixel.launcher.art.AmbientActivity::class.java))
                 }, Modifier.width(360.dp))
                 ActionButton("Screensaver settings (pick Mi TV Art, set the delay)", {
                     try { context.startActivity(Intent(Settings.ACTION_DREAM_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (e: Exception) { Apps.openSystemSettings(context) }

@@ -133,6 +133,7 @@ data class TvState(
     val profiles: List<String> = emptyList(),
     val active: Int = 0,
     val night: Boolean = false,
+    val lofi: Boolean = true,
     val sleepAt: Long = 0L,
     val nowLabel: String = "",
     val onHome: Boolean = false,
@@ -275,6 +276,7 @@ class MainActivity : ComponentActivity() {
             profiles = (0 until profiles.length()).map { profiles.getString(it) },
             active = r.optInt("active"),
             night = r.optBoolean("night"),
+            lofi = r.optBoolean("lofi", true),
             sleepAt = r.optLong("sleepAt"),
             nowLabel = r.optJSONObject("now")?.optString("label").orEmpty(),
             onHome = r.optBoolean("onHome"),
@@ -775,8 +777,16 @@ class MainActivity : ComponentActivity() {
 
             SectionLabel("SCREENSAVER")
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Chip("Start screensaver") { scope.launch { hub.screensaver() } }
-                Chip("New paintings") { scope.launch { hub.newArt(); note = "Downloading new paintings on the TV" } }
+                Chip("Start art + lofi") { scope.launch { hub.screensaver() } }
+                Chip("Next song + picture") { scope.launch { hub.skipArt() } }
+            }
+            Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Card).padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text("Lofi radio", color = Color.White, fontSize = 15.sp)
+                    Text("Plays with the art screensaver", color = Faint, fontSize = 12.sp)
+                }
+                Switch(checked = tv.lofi, onCheckedChange = { on -> scope.launch { hub.lofi(on); refreshState() } },
+                    colors = SwitchDefaults.colors(checkedTrackColor = Accent, checkedThumbColor = Color(0xFF1A1020)))
             }
             if (note.isNotBlank()) Text(note, color = Faint, fontSize = 12.sp)
 
