@@ -784,6 +784,17 @@ class MainActivity : ComponentActivity() {
             AgentSettings()
 
             SectionLabel("CONNECTION")
+            var diag by remember { mutableStateOf("Checking the TV...") }
+            LaunchedEffect(Unit) {
+                val d = hub.diag()
+                diag = when {
+                    d == null -> "Can't reach Mi TV"
+                    d.optBoolean("injector") -> "Buttons: instant mode is on"
+                    d.optBoolean("adb") -> "Buttons: slow mode (instant mode is starting: ${d.optString("injectorStart")})"
+                    else -> "Buttons: basic mode. On the TV press Allow on the \"Allow USB debugging\" box (tick Always allow)"
+                }
+            }
+            Text(diag, color = Dim, fontSize = 13.sp)
             Text("TV address: ${hub.host ?: "unknown"}", color = Faint, fontSize = 12.sp)
             Text("Mi Remote stays paired until you uninstall it. If the TV gets a new address it is found again automatically.", color = Faint, fontSize = 12.sp)
             TextButton(onClick = { confirmUnpair = true }) { Text("Unpair this phone", color = Color(0xFFFF8A8A)) }

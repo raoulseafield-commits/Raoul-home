@@ -51,6 +51,7 @@ class HubClient(context: Context) {
     suspend fun addShow(show: JSONObject, play: Boolean) = request("POST", "/show/add", show.put("play", play), readTimeout = 25_000)
 
     suspend fun agent(session: String, text: String) = request("POST", "/agent", JSONObject().put("session", session).put("text", text), readTimeout = 45_000)
+    suspend fun diag() = request("GET", "/diag", null, readTimeout = 8000)
     suspend fun agentStatus() = request("GET", "/agent/status", null)
     suspend fun setAgentKey(key: String) = request("POST", "/agent/key", JSONObject().put("key", key))
     suspend fun setSubscriptions(list: List<String>) = request("POST", "/agent/subs", JSONObject().put("subscriptions", JSONArray(list)))

@@ -259,8 +259,9 @@ private fun DepthWallpaper(wallId: String, config: Config, weather: WeatherNow?,
             // date and weather line
             DateLine(weather, Modifier.fillMaxWidth().offset(y = h * 0.105f))
             // the clock: centred in the band 16.5% to 50% of the screen height
-            val c1 = Color(info?.c1 ?: 0xFFFFD6E0.toInt())
-            val c2 = Color(info?.c2 ?: 0xFFE6D8FF.toInt())
+            // pink to lilac like the iPhone lock screen, tinted by the photo's own sky
+            val c1 = androidx.compose.ui.graphics.lerp(Color(info?.c1 ?: 0xFFFFD6E0.toInt()), Color(0xFFFFB8D2), 0.45f)
+            val c2 = androidx.compose.ui.graphics.lerp(Color(info?.c2 ?: 0xFFE6D8FF.toInt()), Color(0xFFC9B6FF), 0.6f)
             Box(Modifier.fillMaxWidth().offset(y = h * 0.165f).height(h * 0.335f), contentAlignment = Alignment.Center) {
                 BigClock(config, with(LocalDensity.current) { (h * 0.335f * 1.32f).toSp() }, c1, c2)
             }
