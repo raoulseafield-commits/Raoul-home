@@ -1,0 +1,37 @@
+JW 'house of the dragon': The House of the Spirits | Amazon Prime Video (amazonprimevideo) FLATRATE https://app.primevideo.com/detail?gti=amzn1.dv.gti.3a7128b5-fbef-42e6-b572-9f4faf8fcc72
+JW 'house of the dragon': The House of the Spirits | Amazon Prime Video (amazonprimevideo) FLATRATE https://app.primevideo.com/detail?gti=amzn1.dv.gti.3a7128b5-fbef-42e6-b572-9f4faf8fcc72
+JW 'house of the dragon': The House of the Spirits | Amazon Prime Video (amazonprimevideo) FLATRATE https://app.primevideo.com/detail?gti=amzn1.dv.gti.3a7128b5-fbef-42e6-b572-9f4faf8fcc72
+JW 'house of the dragon': House of Cards | Netflix (netflix) FLATRATE https://www.netflix.com/title/70178217
+JW 'house of the dragon': House of Cards | Netflix (netflix) FLATRATE https://www.netflix.com/title/70178217
+JW 'the last of us': The Last Kingdom | Netflix (netflix) FLATRATE https://www.netflix.com/title/80074249
+JW 'the last of us': The Last Kingdom | Netflix (netflix) FLATRATE https://www.netflix.com/title/80074249
+JW 'big bang theory': The Big Bang Theory | Netflix (netflix) FLATRATE https://www.netflix.com/title/70143830
+JW 'big bang theory': The Big Bang Theory | Netflix (netflix) FLATRATE https://www.netflix.com/title/70143830
+JW 'big bang theory': Nanny McPhee and the Big Bang | Apple TV Store (itunes) RENT https://tv.apple.com/za/movie/nanny-mcphee-returns/umc.cmc.1gsu8ginbsjuih7psjw0ui5li?at=1000l3V2&ct=app_tv&itscg=30200&itsct=justwatch_tv&playableId=tvs.sbd.9001%3A401502204
+JW 'big bang theory': Nanny McPhee and the Big Bang | Apple TV Store (itunes) RENT https://tv.apple.com/za/movie/nanny-mcphee-returns/umc.cmc.1gsu8ginbsjuih7psjw0ui5li?at=1000l3V2&ct=app_tv&itscg=30200&itsct=justwatch_tv&playableId=tvs.sbd.9001%3A401502204
+JW 'big bang theory': Nanny McPhee and the Big Bang | Apple TV Store (itunes) BUY https://tv.apple.com/za/movie/nanny-mcphee-returns/umc.cmc.1gsu8ginbsjuih7psjw0ui5li?at=1000l3V2&ct=app_tv&itscg=30200&itsct=justwatch_tv&playableId=tvs.sbd.9001%3A401502204
+JW 'big bang theory': Nanny McPhee and the Big Bang | Apple TV Store (itunes) BUY https://tv.apple.com/za/movie/nanny-mcphee-returns/umc.cmc.1gsu8ginbsjuih7psjw0ui5li?at=1000l3V2&ct=app_tv&itscg=30200&itsct=justwatch_tv&playableId=tvs.sbd.9001%3A401502204
+JW 'big bang theory': Kiss Kiss Bang Bang | Amazon Prime Video (amazonprimevideo) FLATRATE https://app.primevideo.com/detail?gti=amzn1.dv.gti.0ca9f7c0-e8dc-77d6-e714-a7ee2e3da0ab
+JW 'big bang theory': Kiss Kiss Bang Bang | Amazon Prime Video (amazonprimevideo) FLATRATE https://app.primevideo.com/detail?gti=amzn1.dv.gti.0ca9f7c0-e8dc-77d6-e714-a7ee2e3da0ab
+JW 'big bang theory': Kiss Kiss Bang Bang | Apple TV Store (itunes) RENT https://tv.apple.com/za/movie/kiss-kiss-bang-bang/umc.cmc.71ivbnyuksm7yjufs8zor7am?at=1000l3V2&ct=app_tv&itscg=30200&itsct=justwatch_tv&playableId=tvs.sbd.9001%3A520207431
+JW 'big bang theory': Kiss Kiss Bang Bang | Apple TV Store (itunes) RENT https://tv.apple.com/za/movie/kiss-kiss-bang-bang/umc.cmc.71ivbnyuksm7yjufs8zor7am?at=1000l3V2&ct=app_tv&itscg=30200&itsct=justwatch_tv&playableId=tvs.sbd.9001%3A520207431
+JW 'big bang theory': Kiss Kiss Bang Bang | Apple TV Store (itunes) BUY https://tv.apple.com/za/movie/kiss-kiss-bang-bang/umc.cmc.71ivbnyuksm7yjufs8zor7am?at=1000l3V2&ct=app_tv&itscg=30200&itsct=justwatch_tv&playableId=tvs.sbd.9001%3A520207431
+JW 'big bang theory': Kiss Kiss Bang Bang | Apple TV Store (itunes) BUY https://tv.apple.com/za/movie/kiss-kiss-bang-bang/umc.cmc.71ivbnyuksm7yjufs8zor7am?at=1000l3V2&ct=app_tv&itscg=30200&itsct=justwatch_tv&playableId=tvs.sbd.9001%3A520207431
+JW 'shaka ilembe': Shaka Zulu | Netflix (netflix) FLATRATE https://www.netflix.com/title/70202600
+JW 'shaka ilembe': Family Reunion | Netflix (netflix) FLATRATE https://www.netflix.com/title/80234451
+JW 'shaka ilembe': Family Reunion | Netflix (netflix) FLATRATE https://www.netflix.com/title/80234451
+assetlinks stream.dstv.com: error <urlopen error [Errno -2] Name or service not known>
+assetlinks now.dstv.com: [{
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.dstvmobile.android",
+      "sha256_cert_fingerprints":
+      ["01:3D:F4:CB:B8:00:C4:CA:16:E6:E5:ED:8C:F9:FC:DF:27:E7:D3:CB:7C:60:78:AF:19:D9:C5:E6:B8:44:20:D1"]
+    }
+  }]
+assetlinks www.dstv.com: error HTTP Error 404: 
+assetlinks dstv.com: error HTTP Error 404: 
+assetlinks www.showmax.com: error <urlopen error [Errno -3] Temporary failure in name resolution>
+play dstv stream: ['com.dstvmobile.android', 'com.multichoice.mydstv.thiane']
+play dstv: ['com.dstvmobile.android', 'com.multichoice.mydstv.thiane']
