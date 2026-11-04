@@ -51,6 +51,38 @@ object SystemTune {
         return true
     }
 
+    /**
+     * Who answers the remote's Assistant button. Mi TV: the box's assistant slot points at Mi TV,
+     * which still uses Google's own listening. Google: back to the stock Google Assistant.
+     */
+    fun applyAssistant(context: Context) {
+        val pkg = context.packageName
+        val mine = ConfigStore.load(context).assistant == "mitv"
+        val google = listOf("com.google.android.katniss", "com.google.android.apps.tv.assistant")
+            .firstOrNull { Shell.run(context, "pm list packages $it")?.contains("package:$it") == true } ?: "com.google.android.katniss"
+        val out = if (mine) Shell.run(context,
+            "cmd role add-role-holder --user 0 android.app.role.ASSISTANT $pkg 0 2>&1; settings put secure assistant $pkg/$pkg.voice.AssistActivity; cmd role get-role-holders --user 0 android.app.role.ASSISTANT")
+        else Shell.run(context,
+            "cmd role remove-role-holder --user 0 android.app.role.ASSISTANT $pkg 0 2>&1; cmd role add-role-holder --user 0 android.app.role.ASSISTANT $google 0 2>&1; cmd role get-role-holders --user 0 android.app.role.ASSISTANT")
+        assistantResult = (out ?: "adb not ready").trim().lines().lastOrNull()?.take(80) ?: ""
+        context.getSharedPreferences("tune", Context.MODE_PRIVATE).edit().putString("assistant", if (mine) "mitv" else "google").apply()
+    }
+    @Volatile var assistantResult = ""
+
+    fun applyAssistantIfChanged(context: Context) {
+        val want = ConfigStore.load(context).assistant
+        if (context.getSharedPreferences("tune", Context.MODE_PRIVATE).getString("assistant", "") != want) applyAssistant(context)
+    }
+
+    /** Switch on the Mi TV play helper (accessibility) without touching any others that are on. */
+    fun enablePlayHelper(context: Context) {
+        val me = "${context.packageName}/${context.packageName}.watch.ScreenReader"
+        val cur = Shell.run(context, "settings get secure enabled_accessibility_services")?.trim() ?: return
+        if (cur.contains(me)) return
+        val list = if (cur.isBlank() || cur == "null") me else "$cur:$me"
+        Shell.run(context, "settings put secure enabled_accessibility_services ${Shell.quote(list)}; settings put secure accessibility_enabled 1")
+    }
+
     /** HDMI-CEC: keep the box and the Samsung (Anynet+) in step. */
     fun cec(context: Context) {
         val follow = ConfigStore.load(context).tvFollowsBox

@@ -52,6 +52,8 @@ class HubService : Service() {
                 "cmd notification allow_listener ${ctx.packageName}/za.co.dipixel.launcher.watch.WatchListener")
             Injector.ensureStarted(ctx)
             SystemTune.applyIfNeeded(ctx)
+            SystemTune.enablePlayHelper(ctx)
+            SystemTune.applyAssistantIfChanged(ctx)
         }.start()
         SystemTune.registerWake(applicationContext)
         registerAppChanges()

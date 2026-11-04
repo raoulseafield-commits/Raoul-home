@@ -13,7 +13,7 @@ log = []
 Q = """query S($country: Country!, $language: Language!, $first: Int!, $q: String!) {
   popularTitles(country: $country, first: $first, filter: {searchQuery: $q}) { edges { node {
     objectType content(country: $country, language: $language) { title originalReleaseYear }
-    offers(country: $country, platform: WEB) { monetizationType standardWebURL deeplinkRoku package { clearName technicalName } }
+    offers(country: $country, platform: WEB) { monetizationType standardWebURL package { clearName technicalName } }
   } } } }"""
 for q in ["spinners", "house of the dragon", "the last of us", "big bang theory", "shaka ilembe", "the real housewives of durban"]:
     try:
@@ -23,7 +23,7 @@ for q in ["spinners", "house of the dragon", "the last of us", "big bang theory"
             n = e["node"]
             for o in n.get("offers") or []:
                 pk = o["package"]
-                if re.search("dstv|showmax|multichoice", pk["clearName"] + pk["technicalName"], re.I):
+                if True:
                     log.append(f"JW {q!r}: {n['content']['title']} | {pk['clearName']} ({pk['technicalName']}) {o['monetizationType']} {o['standardWebURL']}")
     except Exception as ex:
         log.append(f"JW {q} error {ex}")

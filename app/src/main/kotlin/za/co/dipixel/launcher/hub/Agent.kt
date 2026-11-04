@@ -93,8 +93,11 @@ For questions about films or series (the latest one, where to watch it, is it on
 Choose the best match yourself: for "latest" pick the most recent release year. Never invent availability.
 Then say where it streams. If it is on a service they pay for, ask whether to play it. If not, say which service has it, or that it can only be rented or bought, and where.
 When they say yes, play it, put it on, or similar, call play_title for that title.
-Kids videos, clips, songs for children: play_youtube (kids=true for the Kids profile or children's content). Songs, artists, albums and playlists: play_music (Spotify), unless they ask for YouTube.
-When something starts, just say it is playing. Never say you can only open the app.
+Songs, artists, albums and playlists: ALWAYS play_music first (Spotify). Only use play_youtube for music if play_music fails or they ask for YouTube or a music video.
+Kids videos and clips: play_youtube (kids=true for the Kids profile or children's content).
+"Play <film or series>" (or "put on", "watch"): call find_title, then straight away play_title with the best match on a service they have. Do not ask first when they already said play. Never ask which app; you decide from where it streams.
+If you are not sure whether "play X" is a song or a show, call find_title; if nothing closely matches the name, treat it as a song and use play_music.
+When something starts, just say it is playing in a few words. Never say you can only open the app, never list ways to open it.
 TV commands: tv_control. Opening an app: open_app. "What's on" or "what am I watching": whats_on.
 """.trim()
     }
@@ -209,8 +212,11 @@ TV commands: tv_control. Opening an app: open_app. "What's on" or "what am I wat
         }
         "play_music" -> {
             val app = Voice.findApp(Apps.installed(context), "spotify")
-            if (app == null) JSONObject().put("ok", false).put("error", "Spotify isn't installed")
-            else JSONObject().put("ok", true).put("message", Autoplay.spotify(context, app, a.optString("query")))
+            if (app == null) {
+                val yt = Voice.findApp(Apps.installed(context), "youtube")
+                if (yt == null) JSONObject().put("ok", false).put("error", "Neither Spotify nor YouTube is installed")
+                else JSONObject().put("ok", true).put("message", Voice.play(context, yt, a.optString("query"))).put("note", "Spotify isn't installed, played on YouTube")
+            } else JSONObject().put("ok", true).put("message", Autoplay.spotify(context, app, a.optString("query")))
         }
         "tv_control" -> JSONObject().put("ok", control(context, a.optString("action"), a.optInt("minutes", 30)))
         "open_app" -> {
@@ -286,7 +292,8 @@ TV commands: tv_control. Opening an app: open_app. "What's on" or "what am I wat
             ?: pool.firstOrNull { it.title.contains(title, true) || title.contains(it.title, true) }
             ?: JustWatch.search(title).firstOrNull()
             ?: return JSONObject().put("ok", false).put("error", "Couldn't find $title")
-        val options = t.streaming.filter { subscribed(context, it) }.mapNotNull { o -> serviceApp(context, o.service)?.let { o to it } }
+        val options = (t.streaming.filter { subscribed(context, it) } + t.streaming.filterNot { subscribed(context, it) })
+            .mapNotNull { o -> serviceApp(context, o.service)?.let { o to it } }.distinctBy { it.second.packageName }
         val pick = options.firstOrNull { prefer.isNotBlank() && norm(it.first.service).contains(norm(prefer)) } ?: options.firstOrNull()
             ?: return JSONObject().put("ok", false).put("error",
                     t.streaming.firstOrNull { subscribed(context, it) }?.let { "${t.title} is on ${it.service}, but that app isn't installed on the TV" }
@@ -369,6 +376,24 @@ TV commands: tv_control. Opening an app: open_app. "What's on" or "what am I wat
                 else -> "I found $name, but it isn't available to stream in South Africa yet."
             }
             return Reply(text, cards)
+        }
+        // "play staying alive" / "play the big bang theory": a show if the name matches one, otherwise a song
+        Regex("^(?:play|put on|watch|listen to) (.+?)(?: please)?$").find(t)?.let { m ->
+            val q = m.groupValues[1]
+            val named = Regex(" (on|in) (netflix|dstv|youtube|youtube kids|spotify|showmax|prime video|disney.*)$").containsMatchIn(q)
+            if (!named) {
+                val k = { x: String -> x.lowercase().removePrefix("the ").replace(Regex("[^a-z0-9]"), "") }
+                val show = JustWatch.search(q).firstOrNull { k(it.title) == k(q) || (k(q).length > 5 && k(it.title).startsWith(k(q))) }
+                if (show != null && t.startsWith("listen").not()) {
+                    s.last = listOf(show); cards.put(card(context, show))
+                    val r = playTitle(context, s, show.title, show.year, "")
+                    if (r.optBoolean("ok")) return Reply("Playing ${show.title} on ${r.optString("playing_on")}.", cards)
+                    return Reply(r.optString("error", "${show.title} isn't on your services.") + ".", cards)
+                }
+                val apps = Apps.installed(context)
+                Voice.findApp(apps, "spotify")?.let { return Reply(Autoplay.spotify(context, it, q) + ".", cards) }
+                Voice.findApp(apps, "youtube")?.let { return Reply(Voice.play(context, it, q) + ".", cards) }
+            }
         }
         return Reply(Voice.handle(context, raw), cards)
     }

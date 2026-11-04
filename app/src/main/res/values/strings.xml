@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Mi TV</string>
+    <string name="screen_reader_desc">Lets Mi TV press Play for you inside Netflix, DStv and Spotify when you ask the agent for something. It reads nothing else.</string>
+    <string name="screen_reader_label">Mi TV play helper</string>
 </resources>

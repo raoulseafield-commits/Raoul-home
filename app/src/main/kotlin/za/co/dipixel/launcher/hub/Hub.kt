@@ -249,6 +249,8 @@ class HubServer(private val context: Context) : NanoHTTPD(Hub.PORT) {
                 .put("injectorStart", Injector.lastStartResult)
                 .put("autoplay", JSONArray(Autoplay.trace))
                 .put("tune", SystemTune.lastResult)
+                .put("assistant", SystemTune.assistantResult)
+                .put("playHelper", Autoplay.helperOn())
                 .put("injectorLog", Shell.run(context, "tail -n 30 ${Injector.LOG} 2>/dev/null") ?: ""))
             "/key" -> {
                 val code = Hub.keyCode(body.optString("key")) ?: return json(JSONObject().put("ok", false).put("message", "Unknown key"))

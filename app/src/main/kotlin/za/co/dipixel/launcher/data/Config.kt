@@ -86,6 +86,8 @@ data class Config(
     val lofiLevel: Int = 2,
     /** Box on turns the TV on (HDMI-CEC One Touch Play). */
     val tvFollowsBox: Boolean = true,
+    /** Remote Assistant button: "mitv" (Google listens, Mi TV agent acts) or "google". */
+    val assistant: String = "mitv",
     /** Epoch millis when the sleep timer fires, 0 = off. */
     val sleepAt: Long = 0L
 ) {
@@ -104,6 +106,7 @@ data class Config(
         .put("lofiRadio", lofiRadio)
         .put("lofiLevel", lofiLevel)
         .put("tvFollowsBox", tvFollowsBox)
+        .put("assistant", assistant)
         .put("sleepAt", sleepAt)
 
     companion object {
@@ -127,6 +130,7 @@ data class Config(
                 lofiRadio = o.optBoolean("lofiRadio", d.lofiRadio),
                 lofiLevel = o.optInt("lofiLevel", d.lofiLevel).coerceIn(1, 3),
                 tvFollowsBox = o.optBoolean("tvFollowsBox", true),
+                assistant = o.optString("assistant", "mitv").let { if (it == "google") "google" else "mitv" },
                 sleepAt = o.optLong("sleepAt", 0L)
             )
         }

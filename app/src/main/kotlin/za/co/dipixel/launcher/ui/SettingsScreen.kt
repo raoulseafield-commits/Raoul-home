@@ -200,6 +200,19 @@ private fun AgentSection(apps: List<TvApp>) {
             CheckRow("Spoken replies", voice, { voice = !voice; za.co.dipixel.launcher.hub.Agent.setVoice(context, voice) },
                 sub = "The agent talks back out loud on Mi Remote. Off: replies show as text only")
         }
+        item { Spacer(Modifier.height(10.dp)); SectionTitle("REMOTE ASSISTANT BUTTON") }
+        item {
+            var mode by remember { mutableStateOf(za.co.dipixel.launcher.data.ConfigStore.load(context).assistant) }
+            fun set(m: String) {
+                mode = m; za.co.dipixel.launcher.data.ConfigStore.update(context) { it.copy(assistant = m) }
+                Thread { za.co.dipixel.launcher.hub.SystemTune.applyAssistant(context) }.start()
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                CheckRow("Mi TV agent (recommended)", mode == "mitv", { set("mitv") },
+                    sub = "Google listens, Mi TV plays it: Spotify first for songs, the right app for shows")
+                CheckRow("Google Assistant", mode == "google", { set("google") }, sub = "The stock Google Assistant")
+            }
+        }
         item { Spacer(Modifier.height(10.dp)); SectionTitle("APPS YOU PAY FOR") }
         item { Text("The agent checks these before it plays a film, series or song. YouTube is always free.", color = Palette.textFaint, fontSize = 13.sp) }
         items(options.size) { i ->

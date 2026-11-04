@@ -19,6 +19,12 @@
     <!-- Needed on Android 11+ to see the other installed TV apps -->
     <queries>
         <intent>
+            <action android:name="android.speech.action.RECOGNIZE_SPEECH" />
+        </intent>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+        <intent>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
         </intent>
@@ -72,6 +78,34 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- APPS button on the remote -->
+            <intent-filter>
+                <action android:name="android.intent.action.ALL_APPS" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <!-- Assistant button on the remote: Google listens, the Mi TV agent acts -->
+        <activity
+            android:name=".voice.AssistActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:taskAffinity="za.co.dipixel.launcher.assist"
+            android:excludeFromRecents="true"
+            android:theme="@style/Theme.MiTV.Assist"
+            android:screenOrientation="landscape">
+            <intent-filter>
+                <action android:name="android.intent.action.ASSIST" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VOICE_COMMAND" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH_LONG_PRESS" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
         </activity>
 
         <receiver android:name=".night.SleepReceiver" android:exported="false" />
@@ -121,5 +155,15 @@
                 <action android:name="android.intent.action.USER_PRESENT" />
             </intent-filter>
         </receiver>
+        <service
+            android:name=".watch.ScreenReader"
+            android:exported="false"
+            android:label="@string/screen_reader_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data android:name="android.accessibilityservice" android:resource="@xml/screen_reader" />
+        </service>
     </application>
 </manifest>

@@ -211,6 +211,7 @@ class MainActivity : ComponentActivity() {
             MaterialTheme(colorScheme = darkColorScheme(primary = Accent, background = Bg, surface = Card)) {
                 Box(Modifier.fillMaxSize().background(Bg).systemBarsPadding().imePadding()) {
                     if (!paired) PairScreen() else Main()
+                    ListeningSheet()
                 }
             }
         }
@@ -228,13 +229,99 @@ class MainActivity : ComponentActivity() {
         return super.onKeyDown(keyCode, event)
     }
 
+    // ---------------- patient listening ----------------
+    private var listening by mutableStateOf(false)
+    private var liveWords by mutableStateOf("")
+    private var listenPrompt by mutableStateOf("")
+    private var recognizer: android.speech.SpeechRecognizer? = null
+    private var pendingListen: Pair<String, (String) -> Unit>? = null
+    private val micPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
+        val p = pendingListen; pendingListen = null
+        if (p != null) { if (ok) listen(p.first, p.second) else listenWithGoogle(p.first, p.second) }
+    }
+
+    /**
+     * Waits up to 8 s for you to start talking, shows the words as you say them and only stops
+     * 2.5 s after you finish. One silent retry if it heard nothing at all.
+     */
     private fun listen(prompt: String, then: (String) -> Unit) {
+        if (!android.speech.SpeechRecognizer.isRecognitionAvailable(this)) { listenWithGoogle(prompt, then); return }
+        if (checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            pendingListen = prompt to then; micPermission.launch(android.Manifest.permission.RECORD_AUDIO); return
+        }
+        tts?.stop()
+        voiceTarget = then
+        listenPrompt = prompt; liveWords = ""; listening = true
+        startRecognizer(retry = true)
+    }
+
+    private fun startRecognizer(retry: Boolean) {
+        recognizer?.destroy()
+        val r = android.speech.SpeechRecognizer.createSpeechRecognizer(this)
+        recognizer = r
+        var heardAnything = false
+        r.setRecognitionListener(object : android.speech.RecognitionListener {
+            override fun onReadyForSpeech(params: Bundle?) {}
+            override fun onBeginningOfSpeech() { heardAnything = true }
+            override fun onRmsChanged(rmsdB: Float) {}
+            override fun onBufferReceived(buffer: ByteArray?) {}
+            override fun onEndOfSpeech() {}
+            override fun onEvent(eventType: Int, params: Bundle?) {}
+            override fun onPartialResults(partial: Bundle?) {
+                partial?.getStringArrayList(android.speech.SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull()?.let { if (it.isNotBlank()) liveWords = it }
+            }
+            override fun onResults(results: Bundle?) {
+                val said = results?.getStringArrayList(android.speech.SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull()?.ifBlank { null } ?: liveWords.ifBlank { null }
+                listening = false
+                if (said != null) voiceTarget?.invoke(said)
+            }
+            override fun onError(error: Int) {
+                val nothing = error == android.speech.SpeechRecognizer.ERROR_SPEECH_TIMEOUT || error == android.speech.SpeechRecognizer.ERROR_NO_MATCH
+                if (nothing && retry && !heardAnything && liveWords.isBlank()) { startRecognizer(retry = false); return }
+                listening = false
+                if (liveWords.isNotBlank()) voiceTarget?.invoke(liveWords)
+            }
+        })
+        val i = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+            .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            .putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-ZA")
+            .putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+            .putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 8000L)
+            .putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 2500L)
+            .putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 2500L)
+        r.startListening(i)
+    }
+
+    private fun stopListening(send: Boolean) {
+        val words = liveWords
+        recognizer?.cancel(); listening = false
+        if (send && words.isNotBlank()) voiceTarget?.invoke(words)
+    }
+
+    /** Phones without an on-device recogniser: Google's own voice screen. */
+    private fun listenWithGoogle(prompt: String, then: (String) -> Unit) {
         voiceTarget = then
         val i = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
             .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             .putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-ZA")
             .putExtra(RecognizerIntent.EXTRA_PROMPT, prompt)
         try { speech.launch(i) } catch (e: Exception) { lastMessage = "Voice typing isn't available on this phone" }
+    }
+
+    @Composable
+    private fun ListeningSheet() {
+        if (!listening) return
+        Box(Modifier.fillMaxSize().background(Color(0xCC000000)).clickable { stopListening(send = true) }, contentAlignment = Alignment.BottomCenter) {
+            Column(Modifier.fillMaxWidth().padding(16.dp).clip(RoundedCornerShape(24.dp))
+                .background(Brush.horizontalGradient(listOf(Color(0xFF3A2456), Color(0xFF5B2F4E)))).padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Box(Modifier.size(64.dp).clip(CircleShape).background(Color.White), contentAlignment = Alignment.Center) {
+                    Icon(Icons.Rounded.Mic, contentDescription = null, tint = Color(0xFF3A2456), modifier = Modifier.size(32.dp))
+                }
+                Text(if (liveWords.isBlank()) "I'm listening, take your time" else liveWords, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Medium)
+                Text(if (liveWords.isBlank()) listenPrompt else "Tap anywhere when you're done", color = Color(0xB3FFFFFF), fontSize = 13.sp)
+            }
+        }
     }
 
     private fun talkToTv() = listen("Try: what's the latest Superman movie?") { said ->
@@ -266,7 +353,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onDestroy() { tts?.shutdown(); super.onDestroy() }
+    override fun onDestroy() { tts?.shutdown(); recognizer?.destroy(); super.onDestroy() }
 
     private suspend fun refreshState() {
         val r = hub.state()

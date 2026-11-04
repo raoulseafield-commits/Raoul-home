@@ -103,6 +103,13 @@ if ("$res" -notmatch "Success") { Log "Install failed. Stopping."; exit 1 }
 & $adb shell appops set $pkg SYSTEM_ALERT_WINDOW allow 2>&1 | Out-Null
 & $adb shell appops set $pkg GET_USAGE_STATS allow 2>&1 | Out-Null
 & $adb shell pm grant $pkg android.permission.RECORD_AUDIO 2>&1 | Out-Null
+$a11y = (& $adb shell settings get secure enabled_accessibility_services 2>$null | Out-String).Trim()
+$me = "$pkg/$pkg.watch.ScreenReader"
+if ($a11y -notlike "*$me*") {
+    if ($a11y -eq "" -or $a11y -eq "null") { $a11y = $me } else { $a11y = "$a11y`:$me" }
+    & $adb shell settings put secure enabled_accessibility_services "$a11y" 2>&1 | Out-Null
+    & $adb shell settings put secure accessibility_enabled 1 2>&1 | Out-Null
+}
 Log "Speed and TV power tweaks..."
 & $adb shell "settings put global window_animation_scale 0.5; settings put global transition_animation_scale 0.5; settings put global animator_duration_scale 0.5" 2>&1 | Out-Null
 & $adb shell "settings put global hdmi_control_enabled 1; settings put global hdmi_control_auto_device_off_enabled 1; settings put global hdmi_control_auto_wakeup_enabled 1" 2>&1 | Out-Null

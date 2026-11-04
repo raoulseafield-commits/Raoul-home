@@ -44,13 +44,33 @@ object Autoplay {
 
     // ---------------- screen reading ----------------
 
-    data class Node(val text: String, val desc: String, val id: String, val pkg: String, val bounds: Rect, val clickable: Boolean, val focused: Boolean) {
+    data class Node(val text: String, val desc: String, val id: String, val pkg: String, val bounds: Rect, val clickable: Boolean, val focused: Boolean,
+                    val editable: Boolean = false, val ref: android.view.accessibility.AccessibilityNodeInfo? = null) {
         val label get() = (text.ifBlank { desc }).trim()
     }
+
+    /** Live nodes from the play helper (accessibility); null when it isn't on. */
+    private fun liveScreen(): List<Node>? {
+        val root = za.co.dipixel.launcher.watch.ScreenReader.root() ?: return null
+        val out = ArrayList<Node>()
+        val stack = ArrayDeque<android.view.accessibility.AccessibilityNodeInfo>()
+        stack.add(root)
+        while (stack.isNotEmpty() && out.size < 1500) {
+            val n = stack.removeLast()
+            val r = Rect(); n.getBoundsInScreen(r)
+            out += Node(n.text?.toString() ?: "", n.contentDescription?.toString() ?: "", n.viewIdResourceName ?: "", n.packageName?.toString() ?: "",
+                r, n.isClickable, n.isFocused, n.isEditable, n)
+            for (i in n.childCount - 1 downTo 0) n.getChild(i)?.let { stack.add(it) }
+        }
+        return out
+    }
+
+    fun helperOn() = za.co.dipixel.launcher.watch.ScreenReader.instance != null
 
     private val attr = Regex("(\\w[\\w-]*)=\"([^\"]*)\"")
 
     fun screen(context: Context): List<Node> {
+        liveScreen()?.let { if (it.isNotEmpty()) return it }
         val xml = Shell.run(context, "uiautomator dump --compressed /data/local/tmp/mitv_ui.xml >/dev/null 2>&1; cat /data/local/tmp/mitv_ui.xml") ?: return emptyList()
         val out = ArrayList<Node>()
         for (m in Regex("<node ([^>]*)/?>").findAll(xml)) {
@@ -66,8 +86,25 @@ object Autoplay {
     private fun unescape(s: String) = s.replace("&amp;", "&").replace("&quot;", "\"").replace("&#39;", "'").replace("&apos;", "'").replace("&lt;", "<").replace("&gt;", ">")
 
     private fun tap(context: Context, n: Node) {
+        // click the node itself, or the nearest clickable parent (cards often wrap their text)
+        var r = n.ref
+        var depth = 0
+        while (r != null && depth < 6) {
+            if (r.isClickable && r.performAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_CLICK)) return
+            r = r.parent; depth++
+        }
         if (n.focused) Hub.pressKey(context, KeyEvent.KEYCODE_DPAD_CENTER)
         else Shell.run(context, "input tap ${n.bounds.centerX()} ${n.bounds.centerY()}")
+    }
+
+    private fun typeInto(context: Context, field: Node?, text: String) {
+        val ref = field?.ref
+        if (ref != null) {
+            ref.performAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_FOCUS)
+            val args = Bundle().apply { putCharSequence(android.view.accessibility.AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, text) }
+            if (ref.performAction(android.view.accessibility.AccessibilityNodeInfo.ACTION_SET_TEXT, args)) return
+        }
+        Hub.typeText(context, text)
     }
 
     private val profileGate = Regex("who'?s watching|who is watching|choose (a |your )?profile|select (a |your )?profile|switch profile|manage profiles", RegexOption.IGNORE_CASE)
@@ -202,20 +239,41 @@ object Autoplay {
 
     // ---------------- search inside an app (DStv when it has no link) ----------------
 
-    /** Opens the app's own search, types the title, opens the first match and presses play. */
+    private val searchWord = Regex("(^|[^a-z])search([^a-z]|$)", RegexOption.IGNORE_CASE)
+
+    /** Opens the app's own search, types the title, opens the best match and presses play. */
     fun searchAndPlay(context: Context, pkg: String, title: String) {
         Thread {
-            Thread.sleep(5000)
-            var nodes = screen(context)
-            if (profileGate.containsMatchIn(nodes.joinToString(" ") { it.label })) { pickProfile(context); Thread.sleep(5000); nodes = screen(context) }
-            val search = nodes.firstOrNull { Regex("^search$", RegexOption.IGNORE_CASE).matches(it.label) || it.id.contains("search", true) }
-            if (search == null) { note("$title: no search button found in $pkg"); return@Thread }
-            note("$title: searching in $pkg"); tap(context, search); Thread.sleep(2500)
-            Hub.typeText(context, title); Thread.sleep(3500)
-            val words = title.lowercase().split(" ").filter { it.length > 2 }
-            val hit = screen(context).filter { n -> val l = n.label.lowercase(); l.isNotBlank() && words.all { l.contains(it) } && n.bounds.top > 150 }
-                .maxByOrNull { if (it.clickable) 1 else 0 }
-            if (hit == null) { note("$title: no result matched"); return@Thread }
+            Thread.sleep(4500)
+            fun now() = screen(context)
+            var nodes = now()
+            if (profileGate.containsMatchIn(nodes.joinToString(" ") { it.label })) { pickProfile(context); Thread.sleep(5000); nodes = now() }
+            fun findSearch(ns: List<Node>) = ns.firstOrNull { searchWord.containsMatchIn(it.label) && it.label.length < 30 }
+                ?: ns.firstOrNull { it.id.contains("search", true) }
+            var search = findSearch(nodes)
+            if (search == null) {
+                // side menus on TV apps open with Left; Search is usually the top item
+                note("$title: opening the side menu to find Search")
+                Hub.pressKey(context, KeyEvent.KEYCODE_DPAD_LEFT, 2); Thread.sleep(1500)
+                nodes = now(); search = findSearch(nodes)
+                if (search == null) { Hub.pressKey(context, KeyEvent.KEYCODE_DPAD_UP, 6); Thread.sleep(1200); nodes = now(); search = findSearch(nodes) }
+            }
+            if (search == null) { note("$title: no Search found in $pkg (helper ${if (helperOn()) "on" else "off"}, ${nodes.size} items on screen)"); return@Thread }
+            note("$title: opening Search"); tap(context, search); Thread.sleep(2500)
+            val field = now().firstOrNull { it.editable }
+            note("$title: typing (${if (field != null) "text box" else "keys"})")
+            typeInto(context, field, title); Thread.sleep(4000)
+            val words = title.lowercase().replace(Regex("[^a-z0-9 ]"), " ").split(" ").filter { it.length > 2 && it != "the" }
+            var hit: Node? = null
+            for (attempt in 0 until 3) {
+                hit = now().filter { n ->
+                    val l = n.label.lowercase()
+                    !n.editable && l.isNotBlank() && l.length < 80 && words.all { l.contains(it) } && n.bounds.width() > 0
+                }.maxByOrNull { (if (it.clickable) 2 else 0) + (if (it.label.lowercase().startsWith(title.lowercase())) 1 else 0) }
+                if (hit != null) break
+                Thread.sleep(2000)
+            }
+            if (hit == null) { note("$title: no search result matched"); return@Thread }
             note("$title: opening result \"${hit.label.take(30)}\""); tap(context, hit)
             follow(context, pkg, title, null, 30_000)
         }.start()

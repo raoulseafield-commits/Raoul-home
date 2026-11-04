@@ -78,6 +78,8 @@ class MainActivity : ComponentActivity() {
         setIntent(intent)
         if (intent.getBooleanExtra(Sleep.EXTRA_SLEEP, false)) {
             sleeping = true
+        } else if (intent.action == Intent.ACTION_ALL_APPS) {
+            screen = Screen.AllApps
         } else {
             // Home button pressed while elsewhere: always land on the home screen
             screen = Screen.Home
@@ -124,6 +126,8 @@ class MainActivity : ComponentActivity() {
             if (event.action == KeyEvent.ACTION_UP) sleeping = false
             return true
         }
+        if (event.keyCode in setOf(KeyEvent.KEYCODE_SEARCH, KeyEvent.KEYCODE_ASSIST, KeyEvent.KEYCODE_VOICE_ASSIST) &&
+            event.action == KeyEvent.ACTION_DOWN && ConfigStore.load(this).assistant == "mitv") return true
         // Hardware buttons on the Xiaomi remote that the stock launcher used to handle
         if (event.action == KeyEvent.ACTION_UP) {
             when (event.keyCode) {
@@ -134,6 +138,11 @@ class MainActivity : ComponentActivity() {
                     return true
                 }
                 KeyEvent.KEYCODE_ALL_APPS -> { screen = Screen.AllApps; return true }
+                KeyEvent.KEYCODE_SEARCH, KeyEvent.KEYCODE_ASSIST, KeyEvent.KEYCODE_VOICE_ASSIST -> {
+                    if (ConfigStore.load(this).assistant == "mitv") {
+                        startActivity(Intent(this, za.co.dipixel.launcher.voice.AssistActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); return true
+                    }
+                }
             }
         }
         return super.dispatchKeyEvent(event)
