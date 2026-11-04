@@ -106,6 +106,7 @@ object Voice {
 
     fun play(context: Context, app: TvApp, query: String): String {
         val pkg = app.packageName
+        za.co.dipixel.launcher.watch.Watching.record(context, query.replaceFirstChar { it.uppercase() }, pkg)
         val q = URLEncoder.encode(query, "UTF-8")
 
         if (pkg.contains("youtube")) {

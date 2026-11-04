@@ -70,7 +70,7 @@ data class Config(
     /** Enabled wallpaper ids out of [Wallpapers.ALL]. */
     val wallpapers: List<String> = Wallpapers.ALL,
     /** Seconds between wallpaper changes. */
-    val wallpaperIntervalSec: Int = 300,
+    val wallpaperIntervalSec: Int = 900,
     val cityName: String = "Pretoria",
     val latitude: Double = -25.7479,
     val longitude: Double = 28.2293,
@@ -104,7 +104,7 @@ data class Config(
                 profiles = profiles,
                 activeProfile = o.optInt("activeProfile", 0).coerceIn(0, profiles.lastIndex),
                 favouriteApps = o.optJSONArray("favouriteApps").toStringList(),
-                wallpapers = o.optJSONArray("wallpapers")?.toStringList()?.ifEmpty { d.wallpapers } ?: d.wallpapers,
+                wallpapers = (o.optJSONArray("wallpapers")?.toStringList() ?: d.wallpapers).filter { it in Wallpapers.ALL }.ifEmpty { d.wallpapers },
                 wallpaperIntervalSec = o.optInt("wallpaperIntervalSec", d.wallpaperIntervalSec),
                 cityName = o.optString("cityName", d.cityName),
                 latitude = o.optDouble("latitude", d.latitude),
@@ -122,19 +122,39 @@ data class Config(
 }
 
 object Wallpapers {
-    const val DUSK = "wall_dusk"
-    const val OCEAN = "wall_ocean"
-    const val CITY = "wall_city"
-    const val FOREST = "wall_forest"
-    const val AURORA = "wall_aurora"
-    val ALL = listOf(DUSK, OCEAN, CITY, FOREST, AURORA)
+    val ALL = listOf("dw1", "dw2", "dw3", "dw4", "dw5", "dw6", "dw7")
     val LABELS = mapOf(
-        DUSK to "Dusk mountains",
-        OCEAN to "Ocean dawn",
-        CITY to "City night",
-        FOREST to "Forest mist",
-        AURORA to "Aurora"
+        "dw1" to "Matterhorn, pink sky",
+        "dw2" to "Torres del Paine, sunrise",
+        "dw3" to "Matterhorn, golden lake",
+        "dw4" to "Sangre de Cristo, dusk",
+        "dw5" to "Mount Rainier, alpenglow",
+        "dw6" to "Matterhorn, purple dusk",
+        "dw7" to "Torres del Paine, pink clouds"
     )
+}
+
+/** Depth wallpaper details made at build time: clock colours, where the mountain cut-out sits, credit. */
+data class WallInfo(val id: String, val c1: Int, val c2: Int, val fg: List<Float>, val credit: String)
+
+object WallCatalog {
+    @Volatile private var cache: Map<String, WallInfo>? = null
+    fun get(context: Context): Map<String, WallInfo> {
+        cache?.let { return it }
+        val out = HashMap<String, WallInfo>()
+        try {
+            val arr = JSONArray(context.assets.open("walls.json").bufferedReader().use { it.readText() })
+            for (i in 0 until arr.length()) {
+                val o = arr.getJSONObject(i)
+                fun col(a: JSONArray) = (0xFF shl 24) or (a.getInt(0) shl 16) or (a.getInt(1) shl 8) or a.getInt(2)
+                val fg = o.getJSONArray("fg")
+                out[o.getString("name")] = WallInfo(o.getString("name"), col(o.getJSONArray("c1")), col(o.getJSONArray("c2")),
+                    (0 until 4).map { fg.getDouble(it).toFloat() }, o.optString("credit"))
+            }
+        } catch (e: Exception) { }
+        cache = out
+        return out
+    }
 }
 
 /** Tiny persistence layer: one JSON blob in SharedPreferences. */

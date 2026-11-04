@@ -44,7 +44,15 @@ class HubService : Service() {
             nsd?.registerService(info, NsdManager.PROTOCOL_DNS_SD, nsdListener)
         } catch (e: Exception) { }
         // Warm up adb now so the one-time "Allow debugging?" prompt shows while someone is at the TV
-        Thread { Shell.run(applicationContext, "echo ok"); Injector.restart(applicationContext) }.start()
+        Thread {
+            val ctx = applicationContext
+            Shell.run(ctx, "echo ok")
+            // let Mi TV see which app is open, and read what's playing (for Continue watching)
+            Shell.run(ctx, "appops set ${ctx.packageName} GET_USAGE_STATS allow; appops set ${ctx.packageName} SYSTEM_ALERT_WINDOW allow; " +
+                "cmd notification allow_listener ${ctx.packageName}/za.co.dipixel.launcher.watch.WatchListener")
+            Injector.ensureStarted(ctx)
+        }.start()
+        registerAppChanges()
         za.co.dipixel.launcher.art.ArtRepo.refreshIfDue(applicationContext)
     }
 
@@ -58,6 +66,18 @@ class HubService : Service() {
                 } catch (e: Exception) { Thread.sleep(2000) }
             }
         }.start()
+    }
+
+    private fun registerAppChanges() {
+        val f = android.content.IntentFilter().apply {
+            addAction(Intent.ACTION_PACKAGE_ADDED); addAction(Intent.ACTION_PACKAGE_REMOVED); addAction(Intent.ACTION_PACKAGE_CHANGED)
+            addDataScheme("package")
+        }
+        try {
+            registerReceiver(object : BroadcastReceiver() {
+                override fun onReceive(c: Context, i: Intent) { za.co.dipixel.launcher.data.Apps.invalidate() }
+            }, f)
+        } catch (e: Exception) { }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

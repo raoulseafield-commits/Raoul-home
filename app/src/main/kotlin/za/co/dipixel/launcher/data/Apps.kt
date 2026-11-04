@@ -19,8 +19,22 @@ data class TvApp(
 object Apps {
     private const val SETTINGS_PACKAGE = "com.android.tv.settings"
 
-    /** Every app that shows up on an Android TV launcher, sorted by name, self excluded. */
+    @Volatile private var cache: List<TvApp>? = null
+    @Volatile private var cacheAt = 0L
+
+    /** Call when apps are installed or removed. */
+    fun invalidate() { cache = null }
+
+    /** Every app that shows up on an Android TV launcher, sorted by name, self excluded. Cached. */
     fun installed(context: Context): List<TvApp> {
+        val c = cache
+        if (c != null && System.currentTimeMillis() - cacheAt < 10 * 60_000L) return c
+        val fresh = load(context)
+        cache = fresh; cacheAt = System.currentTimeMillis()
+        return fresh
+    }
+
+    private fun load(context: Context): List<TvApp> {
         val pm = context.packageManager
         val leanback = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LEANBACK_LAUNCHER)
         val normal = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)

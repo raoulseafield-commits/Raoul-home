@@ -1,0 +1,149 @@
+[
+ {
+  "name": "dw1",
+  "fg": [
+   0.18,
+   0.08,
+   0.82,
+   0.62
+  ],
+  "c1": [
+   255,
+   206,
+   209
+  ],
+  "c2": [
+   255,
+   211,
+   206
+  ],
+  "credit": "Sam Ferrara samferrara \u00b7 CC0",
+  "title": "Matterhorn sunset 2016 (Unsplash)"
+ },
+ {
+  "name": "dw2",
+  "fg": [
+   0.18,
+   0.08,
+   0.82,
+   0.62
+  ],
+  "c1": [
+   255,
+   205,
+   189
+  ],
+  "c2": [
+   255,
+   213,
+   199
+  ],
+  "credit": "Pedro Szekely from Los Angeles, USA \u00b7 CC BY-SA 2.0",
+  "title": "Cuernos del Paine in Torres del Paine National Park"
+ },
+ {
+  "name": "dw3",
+  "fg": [
+   0.18,
+   0.08,
+   0.82,
+   0.62
+  ],
+  "c1": [
+   255,
+   253,
+   248
+  ],
+  "c2": [
+   255,
+   249,
+   239
+  ],
+  "credit": "Giles Laurent \u00b7 CC BY-SA 4.0",
+  "title": "043 Matterhorn reflecting in Stellisee at sunset Photo by Giles Lauren"
+ },
+ {
+  "name": "dw4",
+  "fg": [
+   0.18,
+   0.08,
+   0.82,
+   0.62
+  ],
+  "c1": [
+   228,
+   217,
+   255
+  ],
+  "c2": [
+   240,
+   220,
+   255
+  ],
+  "credit": "Great Sand Dunes National Park and Preserve \u00b7 Public domain",
+  "title": "Spring Alpenglow on Crestone Peaks (34109857212)"
+ },
+ {
+  "name": "dw5",
+  "fg": [
+   0.18,
+   0.08,
+   0.82,
+   0.62
+  ],
+  "c1": [
+   193,
+   213,
+   255
+  ],
+  "c2": [
+   192,
+   212,
+   255
+  ],
+  "credit": "Steve Redman (MORA) \u00b7 Public domain",
+  "title": "Alpenglow (a17c310b0b03486985eb3a508e045d49)"
+ },
+ {
+  "name": "dw6",
+  "fg": [
+   0.18,
+   0.08,
+   0.82,
+   0.62
+  ],
+  "c1": [
+   240,
+   217,
+   255
+  ],
+  "c2": [
+   242,
+   225,
+   255
+  ],
+  "credit": "Sam Ferrara samferrara \u00b7 CC0",
+  "title": "Sunset over Matterhorn (Unsplash)"
+ },
+ {
+  "name": "dw7",
+  "fg": [
+   0.18,
+   0.08,
+   0.82,
+   0.62
+  ],
+  "c1": [
+   255,
+   213,
+   203
+  ],
+  "c2": [
+   255,
+   218,
+   211
+  ],
+  "credit": "Pedro Szekely from Los Angeles, USA \u00b7 CC BY-SA 2.0",
+  "title": "Torres del Paine sunrise (53467301192)"
+ }
+]

@@ -30,6 +30,7 @@ object InjectorMain {
 
     @JvmStatic
     fun main(args: Array<String>) {
+        println("Mi TV injector starting, pid " + android.os.Process.myPid())
         manager = try {
             Class.forName("android.hardware.input.InputManagerGlobal").getDeclaredMethod("getInstance").invoke(null)!!
         } catch (e: Throwable) {
@@ -38,6 +39,7 @@ object InjectorMain {
         inject = manager.javaClass.getMethod("injectInputEvent", InputEvent::class.java, Int::class.javaPrimitiveType)
 
         val server = ServerSocket(PORT, 8, InetAddress.getByName("127.0.0.1"))
+        println("Mi TV injector listening on $PORT")
         while (true) {
             val s = server.accept()
             Thread { serve(s) }.start()
@@ -58,7 +60,7 @@ object InjectorMain {
                         line.startsWith("l ") -> press(line.substring(2).trim().toInt(), true)
                         line.startsWith("t ") -> type(line.substring(2))
                     }
-                } catch (e: Throwable) { }
+                } catch (e: Throwable) { e.printStackTrace() }
             }
         } catch (e: Throwable) {
         } finally {

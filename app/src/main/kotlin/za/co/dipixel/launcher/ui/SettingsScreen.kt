@@ -49,7 +49,7 @@ import za.co.dipixel.launcher.data.Show
 import za.co.dipixel.launcher.data.TvApp
 import za.co.dipixel.launcher.data.Wallpapers
 
-private val sections = listOf("Profiles & shows", "Apps row", "Clock & weather", "Mi Remote", "System")
+private val sections = listOf("Profiles", "Apps", "Wallpaper", "Clock & weather", "Mi Remote", "System")
 
 @Composable
 fun SettingsScreen(config: Config, apps: List<TvApp>, onConfig: (Config) -> Unit) {
@@ -73,8 +73,9 @@ fun SettingsScreen(config: Config, apps: List<TvApp>, onConfig: (Config) -> Unit
             when (section) {
                 0 -> ProfilesSection(config, apps, onConfig)
                 1 -> AppsSection(config, apps, onConfig)
-                2 -> ClockSection(config, onConfig)
-                3 -> PhoneRemoteSection()
+                2 -> WallpapersSection(config, onConfig)
+                3 -> ClockSection(config, onConfig)
+                4 -> PhoneRemoteSection()
                 else -> SystemSection()
             }
         }
@@ -125,79 +126,44 @@ private fun CheckRow(label: String, checked: Boolean, onToggle: () -> Unit, sub:
     }
 }
 
-// ---------------- Profiles & shows ----------------
+// ---------------- Profiles ----------------
 
 @Composable
 private fun ProfilesSection(config: Config, apps: List<TvApp>, onConfig: (Config) -> Unit) {
-    var selected by remember { mutableIntStateOf(config.activeProfile) }
-    val profile = config.profiles.getOrNull(selected) ?: config.profiles.first()
-
-    fun replaceProfile(p: Profile) {
-        onConfig(config.copy(profiles = config.profiles.mapIndexed { i, old -> if (i == selected) p else old }))
-    }
-
-    var title by remember(selected) { mutableStateOf("") }
-    var url by remember(selected) { mutableStateOf("") }
-    var providerPkg by remember(selected) { mutableStateOf(apps.firstOrNull()?.packageName ?: "") }
-
     LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp), contentPadding = PaddingValues(bottom = 40.dp)) {
         item {
-            SectionTitle("PROFILE")
-            Spacer(Modifier.height(8.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                config.profiles.forEachIndexed { i, p -> Pill(p.name, selected = i == selected, onClick = { selected = i }) }
+            Text("Continue watching fills itself: anything you play for a minute, or start from Mi Remote, lands at the front for whoever is selected.",
+                color = Palette.textFaint, fontSize = 13.sp, modifier = Modifier.width(620.dp))
+        }
+        config.profiles.forEachIndexed { pi, profile ->
+            item {
+                Spacer(Modifier.height(8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Field(profile.name, "Profile ${pi + 1} name", { v ->
+                        onConfig(config.copy(profiles = config.profiles.mapIndexed { i, p -> if (i == pi) p.copy(name = v) else p }))
+                    }, Modifier.width(300.dp))
+                    Spacer(Modifier.width(14.dp))
+                    Text(if (profile.shows.isEmpty()) "Nothing watched yet" else "${profile.shows.size} in Continue watching",
+                        color = Palette.textFaint, fontSize = 13.sp)
+                }
             }
-        }
-        item {
-            Field(profile.name, "Profile name", { replaceProfile(profile.copy(name = it)) }, Modifier.width(360.dp))
-        }
-        item {
-            SectionTitle("SHOWS ON THIS PROFILE")
-            Spacer(Modifier.height(4.dp))
-            if (profile.shows.isEmpty()) Text("No shows yet. Add one below.", color = Palette.textFaint, fontSize = 14.sp)
-        }
-        items(profile.shows) { show ->
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.width(520.dp).clip(RoundedCornerShape(12.dp)).background(Color(0x14FFFFFF)).padding(14.dp)) {
-                    Column {
-                        Text(show.title, color = Palette.text, fontSize = 16.sp, fontWeight = FontWeight.Medium)
-                        Text(show.providerLabel + if (show.url.isNotBlank()) "  ·  " + show.url else "", color = Palette.textFaint, fontSize = 12.sp, maxLines = 1)
+            items(profile.shows.size) { si ->
+                val show = profile.shows[si]
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 12.dp)) {
+                    Box(Modifier.width(520.dp).clip(RoundedCornerShape(12.dp)).background(Color(0x14FFFFFF)).padding(horizontal = 14.dp, vertical = 10.dp)) {
+                        Column {
+                            Text(show.title, color = Palette.text, fontSize = 15.sp, fontWeight = FontWeight.Medium, maxLines = 1)
+                            Text(show.providerLabel.ifBlank { "Any app" }, color = Palette.textFaint, fontSize = 12.sp, maxLines = 1)
+                        }
+                    }
+                    Spacer(Modifier.width(10.dp))
+                    Tile(onClick = {
+                        onConfig(config.copy(profiles = config.profiles.mapIndexed { i, p -> if (i == pi) p.copy(shows = p.shows.filterIndexed { j, _ -> j != si }) else p }))
+                    }, modifier = Modifier.size(42.dp), corner = 12, container = Color(0x1FFFFFFF)) {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Icon(Icons.Rounded.Delete, contentDescription = "Remove", tint = Palette.text) }
                     }
                 }
-                Spacer(Modifier.width(10.dp))
-                Tile(onClick = { replaceProfile(profile.copy(shows = profile.shows - show)) }, modifier = Modifier.size(44.dp), corner = 12, container = Color(0x1FFFFFFF)) {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Icon(Icons.Rounded.Delete, contentDescription = "Remove", tint = Palette.text) }
-                }
             }
-        }
-        item {
-            Spacer(Modifier.height(8.dp))
-            SectionTitle("ADD A SHOW")
-            Spacer(Modifier.height(8.dp))
-            Field(title, "Show title (e.g. Slow Horses)", { title = it }, Modifier.width(520.dp))
-            Spacer(Modifier.height(8.dp))
-            Field(url, "Link (optional, e.g. https://www.netflix.com/title/80014749)", { url = it }, Modifier.width(520.dp))
-            Spacer(Modifier.height(10.dp))
-            Text("Opens with", color = Palette.textFaint, fontSize = 12.sp)
-            Spacer(Modifier.height(6.dp))
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), contentPadding = PaddingValues(vertical = 6.dp)) {
-                items(apps, key = { it.packageName }) { app -> Pill(app.label, selected = app.packageName == providerPkg, onClick = { providerPkg = app.packageName }, textSize = 14) }
-            }
-            Spacer(Modifier.height(10.dp))
-            ActionButton("Add show", primary = true, onClick = {
-                if (title.isNotBlank()) {
-                    val provider = apps.firstOrNull { it.packageName == providerPkg }
-                    replaceProfile(profile.copy(shows = profile.shows + Show(title.trim(), providerPkg, provider?.label ?: "", url.trim())))
-                    title = ""; url = ""
-                }
-            })
-            Spacer(Modifier.height(12.dp))
-            Text(
-                "Tip: a link jumps straight into the show. Netflix: netflix.com/title/ID. YouTube: youtube.com/watch?v=ID. " +
-                    "Prime: primevideo.com/detail/ID. Disney+, Showmax, DStv and Apple TV share links from their apps also work. " +
-                    "Leave it blank and the app simply opens.",
-                color = Palette.textFaint, fontSize = 12.sp
-            )
         }
     }
 }
@@ -230,11 +196,13 @@ private fun AppsSection(config: Config, apps: List<TvApp>, onConfig: (Config) ->
 
 @Composable
 private fun WallpapersSection(config: Config, onConfig: (Config) -> Unit) {
+    val context = LocalContext.current
+    val catalog = remember { za.co.dipixel.launcher.data.WallCatalog.get(context) }
     LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), contentPadding = PaddingValues(bottom = 40.dp)) {
-        item { SectionTitle("SCENES IN ROTATION") }
+        item { SectionTitle("PHOTOS IN ROTATION") }
         items(Wallpapers.ALL) { id ->
             val on = id in config.wallpapers
-            CheckRow(Wallpapers.LABELS[id] ?: id, on, onToggle = {
+            CheckRow(Wallpapers.LABELS[id] ?: id, on, sub = catalog[id]?.credit?.let { "Photo: $it" }, onToggle = {
                 val next = if (on) config.wallpapers - id else config.wallpapers + id
                 if (next.isNotEmpty()) onConfig(config.copy(wallpapers = next))
             })
@@ -244,7 +212,7 @@ private fun WallpapersSection(config: Config, onConfig: (Config) -> Unit) {
             SectionTitle("CHANGE EVERY")
             Spacer(Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                listOf(60 to "1 min", 300 to "5 min", 900 to "15 min", 1800 to "30 min", 3600 to "1 hour").forEach { (sec, label) ->
+                listOf(300 to "5 min", 900 to "15 min", 1800 to "30 min", 3600 to "1 hour", 86400 to "Daily").forEach { (sec, label) ->
                     Pill(label, selected = config.wallpaperIntervalSec == sec, onClick = { onConfig(config.copy(wallpaperIntervalSec = sec)) })
                 }
             }

@@ -58,10 +58,8 @@ object Hub {
 
     fun keyCode(name: String): Int? = keyNames[name.lowercase()] ?: name.toIntOrNull()
 
-    /** Press a key on the TV: instant injector first, adb command second, local fallbacks last. */
+    /** Press a key on the TV. Volume and media go straight to the audio system (instant, no adb). */
     fun pressKey(context: Context, code: Int, times: Int = 1, long: Boolean = false): Boolean {
-        if (Injector.key(context, code, times, long)) return true
-        if (Shell.key(context, code, times)) return true
         val audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         when (code) {
             KeyEvent.KEYCODE_VOLUME_UP, KeyEvent.KEYCODE_VOLUME_DOWN, KeyEvent.KEYCODE_VOLUME_MUTE -> {
@@ -70,18 +68,21 @@ object Hub {
                     KeyEvent.KEYCODE_VOLUME_DOWN -> AudioManager.ADJUST_LOWER
                     else -> AudioManager.ADJUST_TOGGLE_MUTE
                 }
-                repeat(times) { audio.adjustStreamVolume(AudioManager.STREAM_MUSIC, dir, AudioManager.FLAG_SHOW_UI) }
+                repeat(times.coerceIn(1, 10)) { audio.adjustStreamVolume(AudioManager.STREAM_MUSIC, dir, AudioManager.FLAG_SHOW_UI) }
                 return true
             }
             KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, KeyEvent.KEYCODE_MEDIA_PLAY, KeyEvent.KEYCODE_MEDIA_PAUSE,
-            KeyEvent.KEYCODE_MEDIA_NEXT, KeyEvent.KEYCODE_MEDIA_PREVIOUS -> {
+            KeyEvent.KEYCODE_MEDIA_NEXT, KeyEvent.KEYCODE_MEDIA_PREVIOUS,
+            KeyEvent.KEYCODE_MEDIA_REWIND, KeyEvent.KEYCODE_MEDIA_FAST_FORWARD -> {
+                if (Injector.key(context, code, times)) return true
                 audio.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, code))
                 audio.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, code))
                 return true
             }
-            KeyEvent.KEYCODE_HOME -> return goHome(context)
         }
-        return false
+        if (Injector.key(context, code, times, long)) return true
+        if (code == KeyEvent.KEYCODE_HOME && goHome(context)) return true
+        return Shell.key(context, code, times)
     }
 
     fun typeText(context: Context, text: String): Boolean = Injector.text(context, text) || Shell.text(context, text)
@@ -90,14 +91,24 @@ object Hub {
         context.startActivity(Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); true
     } catch (e: Exception) { false }
 
-    // ---- what's on screen right now (cached, it costs a dumpsys) ----
+    // ---- what's on screen right now (UsageStats: cheap, no dumpsys) ----
     private var nowAt = 0L
     private var nowPkg = ""
     fun nowPlayingPackage(context: Context): String {
-        if (System.currentTimeMillis() - nowAt < 4000) return nowPkg
+        if (System.currentTimeMillis() - nowAt < 3000) return nowPkg
         nowAt = System.currentTimeMillis()
-        val out = Shell.run(context, "dumpsys activity activities | grep -m1 -E 'topResumedActivity|mResumedActivity'") ?: return nowPkg
-        nowPkg = Regex("u0 ([a-zA-Z0-9_.]+)/").find(out)?.groupValues?.get(1) ?: nowPkg
+        try {
+            val usm = context.getSystemService(Context.USAGE_STATS_SERVICE) as android.app.usage.UsageStatsManager
+            val end = System.currentTimeMillis()
+            val events = usm.queryEvents(end - 6 * 60 * 60_000L, end)
+            val e = android.app.usage.UsageEvents.Event()
+            var last: String? = null
+            while (events.hasNextEvent()) {
+                events.getNextEvent(e)
+                if (e.eventType == android.app.usage.UsageEvents.Event.ACTIVITY_RESUMED) last = e.packageName
+            }
+            if (last != null) nowPkg = last
+        } catch (e: Exception) { }
         return nowPkg
     }
 
@@ -106,6 +117,7 @@ object Hub {
 
     // ---- shows ----
     fun playShow(context: Context, show: Show): String {
+        za.co.dipixel.launcher.watch.Watching.record(context, show.title, show.providerPackage, show.url, show)
         val apps = Apps.installed(context)
         val app = apps.firstOrNull { it.packageName == show.providerPackage }
         if (show.url.isNotBlank()) {
@@ -151,14 +163,30 @@ class ControlServer(private val context: Context) {
             val first = r.readLine() ?: return
             if (!first.startsWith("a ") || !Pairing.valid(context, first.substring(2).trim())) { reply("no"); return }
             reply("ok")
-            while (true) {
-                val line = r.readLine() ?: break
-                when {
-                    line == "p" -> reply("p")
-                    line.startsWith("k ") -> Hub.keyCode(line.substring(2).trim())?.let { Hub.pressKey(context, it) }
-                    line.startsWith("l ") -> Hub.keyCode(line.substring(2).trim())?.let { Hub.pressKey(context, it, long = true) }
-                    line.startsWith("t ") -> Hub.typeText(context, line.substring(2))
+            // presses run on their own worker; anything older than 1.2 s is dropped so a hiccup can never build a backlog
+            val queue = java.util.concurrent.LinkedBlockingQueue<Pair<Long, String>>()
+            val worker = Thread {
+                try {
+                    while (true) {
+                        val (at, cmd) = queue.take()
+                        if (cmd == "quit") break
+                        val stale = System.currentTimeMillis() - at > 1200
+                        when {
+                            cmd.startsWith("k ") -> if (!stale) Hub.keyCode(cmd.substring(2).trim())?.let { Hub.pressKey(context, it) }
+                            cmd.startsWith("l ") -> if (!stale) Hub.keyCode(cmd.substring(2).trim())?.let { Hub.pressKey(context, it, long = true) }
+                            cmd.startsWith("t ") -> Hub.typeText(context, cmd.substring(2))
+                        }
+                    }
+                } catch (e: InterruptedException) { }
+            }.apply { isDaemon = true; start() }
+            try {
+                while (true) {
+                    val line = r.readLine() ?: break
+                    if (line == "p") reply("p") else queue.offer(System.currentTimeMillis() to line)
                 }
+            } finally {
+                queue.offer(0L to "quit")
+                worker.interrupt()
             }
         } catch (e: Exception) {
         } finally {
@@ -199,6 +227,11 @@ class HubServer(private val context: Context) : NanoHTTPD(Hub.PORT) {
         val ok = JSONObject().put("ok", true)
         return when (path) {
             "/state" -> json(state())
+            "/diag" -> json(JSONObject().put("ok", true)
+                .put("adb", Shell.run(context, "echo ok")?.trim() == "ok")
+                .put("injector", Injector.running)
+                .put("injectorStart", Injector.lastStartResult)
+                .put("injectorLog", Shell.run(context, "tail -n 30 ${Injector.LOG} 2>/dev/null") ?: ""))
             "/key" -> {
                 val code = Hub.keyCode(body.optString("key")) ?: return json(JSONObject().put("ok", false).put("message", "Unknown key"))
                 json(JSONObject().put("ok", Hub.pressKey(context, code, body.optInt("times", 1), body.optBoolean("long"))))

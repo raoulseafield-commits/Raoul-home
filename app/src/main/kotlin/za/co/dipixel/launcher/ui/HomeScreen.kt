@@ -1,21 +1,18 @@
 package za.co.dipixel.launcher.ui
 
-import android.graphics.Bitmap
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -23,15 +20,16 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AcUnit
-import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Apps
 import androidx.compose.material.icons.rounded.Bedtime
 import androidx.compose.material.icons.rounded.Cloud
@@ -46,55 +44,61 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.graphics.drawable.toBitmap
 import coil.compose.AsyncImage
-import coil.request.ImageRequest
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
+import za.co.dipixel.launcher.R
 import za.co.dipixel.launcher.data.Apps
 import za.co.dipixel.launcher.data.Config
 import za.co.dipixel.launcher.data.Show
 import za.co.dipixel.launcher.data.TvApp
+import za.co.dipixel.launcher.data.WallCatalog
+import za.co.dipixel.launcher.data.Wallpapers
 import za.co.dipixel.launcher.data.Weather
 import za.co.dipixel.launcher.data.WeatherNow
 import za.co.dipixel.launcher.night.Sleep
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-/** What the big background and title area is showing right now. */
-private sealed class Hero {
-    data class OfShow(val show: Show, val index: Int) : Hero()
-    data class OfApp(val app: TvApp) : Hero()
-    data object Empty : Hero()
-}
+@OptIn(androidx.compose.ui.text.ExperimentalTextApi::class)
+val ClockFont = FontFamily(
+    Font(R.font.oswald, FontWeight.Light, variationSettings = FontVariation.Settings(FontVariation.weight(300)))
+)
 
-private val profileColors = listOf(Color(0xFFE50914), Color(0xFF2F80ED), Color(0xFFF2C94C), Color(0xFF27AE60), Color(0xFFBB6BD9))
+@OptIn(androidx.compose.ui.text.ExperimentalTextApi::class)
+val UiFont = FontFamily(
+    Font(R.font.inter, FontWeight.Normal, variationSettings = FontVariation.Settings(FontVariation.weight(400))),
+    Font(R.font.inter, FontWeight.Medium, variationSettings = FontVariation.Settings(FontVariation.weight(500))),
+    Font(R.font.inter, FontWeight.SemiBold, variationSettings = FontVariation.Settings(FontVariation.weight(600))),
+    Font(R.font.inter, FontWeight.Bold, variationSettings = FontVariation.Settings(FontVariation.weight(700)))
+)
 
 @Composable
 fun HomeScreen(
@@ -108,32 +112,20 @@ fun HomeScreen(
     val profile = config.profiles.getOrNull(config.activeProfile) ?: config.profiles.first()
     val favourites = remember(config.favouriteApps, apps) { favouriteApps(config, apps) }
 
-    // ---- per app colours, pulled from each app's banner ----
-    val appColors = remember { mutableStateMapOf<String, Color>() }
-    LaunchedEffect(favourites) {
-        withContext(Dispatchers.Default) {
-            for (a in favourites) if (a.packageName !in appColors) {
-                try {
-                    val bmp = (a.banner ?: a.icon).toBitmap(160, 90, Bitmap.Config.ARGB_8888)
-                    val p = androidx.palette.graphics.Palette.from(bmp).generate()
-                    appColors[a.packageName] = Color(p.getVibrantColor(p.getDominantColor(0xFF333344.toInt())))
-                } catch (e: Exception) { }
-            }
-        }
+    // the show whose backdrop is showing (only while a Continue watching card has focus)
+    var heroShow by remember { mutableStateOf<Show?>(null) }
+    LaunchedEffect(profile.shows) {
+        heroShow?.let { h -> heroShow = profile.shows.firstOrNull { it.title == h.title } }
     }
 
-    var hero by remember { mutableStateOf<Hero>(Hero.Empty) }
-    LaunchedEffect(profile.shows, favourites) {
-        val h = hero
-        val stale = h is Hero.Empty || (h is Hero.OfShow && profile.shows.none { it.title == h.show.title })
-        if (stale) hero = profile.shows.firstOrNull()?.let { Hero.OfShow(it, 0) } ?: favourites.firstOrNull()?.let { Hero.OfApp(it) } ?: Hero.Empty
-        // keep the hero fresh when artwork arrives for the focused show
-        if (h is Hero.OfShow) profile.shows.getOrNull(h.index)?.let { if (it.title == h.show.title && it != h.show) hero = Hero.OfShow(it, h.index) }
+    // wallpaper rotation
+    val walls = config.wallpapers.ifEmpty { Wallpapers.ALL }
+    var wallIndex by remember { mutableIntStateOf(0) }
+    LaunchedEffect(walls, config.wallpaperIntervalSec) {
+        while (true) { delay(config.wallpaperIntervalSec.coerceAtLeast(30) * 1000L); wallIndex = (wallIndex + 1) % walls.size }
     }
+    val wall = walls[wallIndex % walls.size]
 
-    // ---- clock + weather ----
-    var now by remember { mutableStateOf(LocalDateTime.now()) }
-    LaunchedEffect(Unit) { while (true) { now = LocalDateTime.now(); delay(1000) } }
     var weather by remember { mutableStateOf<WeatherNow?>(null) }
     LaunchedEffect(config.latitude, config.longitude) {
         while (true) { weather = Weather.fetch(config.latitude, config.longitude) ?: weather; delay(20 * 60_000L) }
@@ -141,122 +133,82 @@ fun HomeScreen(
 
     var nightMenu by remember { mutableStateOf(false) }
     var appMenu by remember { mutableStateOf<TvApp?>(null) }
-    val firstFocus = remember { FocusRequester() }
-    LaunchedEffect(Unit) { delay(200); try { firstFocus.requestFocus() } catch (e: Exception) {} }
+    val dockFocus = remember { FocusRequester() }
+    LaunchedEffect(Unit) { delay(250); try { dockFocus.requestFocus() } catch (e: Exception) {} }
 
-    val tintTarget = when (val h = hero) {
-        is Hero.OfApp -> appColors[h.app.packageName] ?: Color(0xFF26263A)
-        else -> Color(0xFF101018)
-    }
-    val tint by animateColorAsState(tintTarget, tween(700), label = "tint")
+    val lockAlpha by animateFloatAsState(if (heroShow == null) 1f else 0f, tween(450), label = "lock")
 
-    Box(Modifier.fillMaxSize().background(Color(0xFF050507))) {
-        HeroBackground(hero, tint)
+    Box(Modifier.fillMaxSize().background(Color.Black)) {
+        // ---------- wallpaper with the clock tucked behind the mountain ----------
+        Crossfade(targetState = wall, animationSpec = tween(1200), label = "wall") { w ->
+            DepthWallpaper(w, config, weather, lockAlpha)
+        }
 
-        Column(Modifier.fillMaxSize().padding(start = 48.dp, end = 48.dp, top = 26.dp, bottom = 18.dp)) {
-            // ---- top bar ----
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                config.profiles.forEachIndexed { i, p ->
-                    val selected = i == config.activeProfile
-                    val col = profileColors[i % profileColors.size]
-                    Tile(
-                        onClick = { onConfig(config.copy(activeProfile = i)) },
-                        modifier = Modifier.padding(end = 10.dp).size(if (selected) 44.dp else 36.dp),
-                        corner = 22,
-                        container = col.copy(alpha = if (selected) 1f else 0.5f),
-                        focusedContainer = col,
-                        focusedScale = 1.12f
-                    ) {
-                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text(p.name.take(1).uppercase(), color = Color.White, fontSize = if (selected) 19.sp else 15.sp, fontWeight = FontWeight.Bold)
-                        }
-                    }
-                }
-                Text(profile.name, color = Palette.text, fontSize = 16.sp, fontWeight = FontWeight.Medium, modifier = Modifier.padding(start = 4.dp))
-                Spacer(Modifier.weight(1f))
-                if (config.sleepAt > 0L) {
-                    val mins = ((config.sleepAt - System.currentTimeMillis()) / 60_000L).coerceAtLeast(0)
-                    Text("Sleep in ${mins + 1} min", color = Palette.textDim, fontSize = 13.sp, modifier = Modifier.padding(end = 14.dp))
-                }
-                Column(horizontalAlignment = Alignment.End, modifier = Modifier.padding(end = 16.dp)) {
-                    val pattern = (if (config.use24h) "HH:mm" else "h:mm") + (if (config.showSeconds) ":ss" else "")
-                    Text(now.format(DateTimeFormatter.ofPattern(pattern)), color = Color.White, fontSize = 30.sp, fontWeight = FontWeight.Light)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(now.format(DateTimeFormatter.ofPattern("EEE d MMM")), color = Palette.textDim, fontSize = 12.sp)
-                        weather?.let { w ->
-                            Spacer(Modifier.width(8.dp))
-                            Icon(weatherIcon(w), contentDescription = null, tint = Palette.textDim, modifier = Modifier.size(13.dp))
-                            Spacer(Modifier.width(3.dp))
-                            Text("${w.tempC}°", color = Palette.textDim, fontSize = 12.sp)
-                        }
-                    }
-                }
-                Pill(text = "", icon = Icons.Rounded.Bedtime, selected = config.nightMode, onClick = { nightMenu = !nightMenu })
-                Spacer(Modifier.width(8.dp))
-                Pill(text = "", icon = Icons.Rounded.Settings, onClick = onOpenSettings)
-            }
+        // ---------- show backdrop (Continue watching focus only) ----------
+        Crossfade(targetState = heroShow, animationSpec = tween(450), label = "hero") { s ->
+            if (s != null) ShowHero(s)
+        }
 
+        // soft shade at the bottom so the rows read on any photo
+        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0.55f to Color(0x00000000), 1f to Color(0xA6000000))))
+
+        // ---------- top bar ----------
+        Row(Modifier.fillMaxWidth().padding(start = 40.dp, end = 40.dp, top = 26.dp), verticalAlignment = Alignment.CenterVertically) {
+            ProfileToggle(config, onConfig)
             Spacer(Modifier.weight(1f))
+            if (config.sleepAt > 0L) {
+                val mins = ((config.sleepAt - System.currentTimeMillis()) / 60_000L).coerceAtLeast(0)
+                Text("Sleep in ${mins + 1} min", color = Palette.textDim, fontSize = 13.sp, fontFamily = UiFont, modifier = Modifier.padding(end = 12.dp))
+            }
+            GlassCircle(Icons.Rounded.Bedtime, selected = config.nightMode) { nightMenu = !nightMenu }
+        }
 
-            HeroInfo(hero)
-
-            Spacer(Modifier.height(16.dp))
-
-            // ---- continue watching ----
-            SectionTitle(if (profile.shows.isEmpty()) "ADD SOMETHING TO WATCH" else "CONTINUE WATCHING")
-            Spacer(Modifier.height(6.dp))
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(14.dp), contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp)) {
-                itemsIndexed(profile.shows, key = { i, s -> s.title + i }) { i, show ->
-                    ShowCard(
-                        show = show,
-                        provider = apps.firstOrNull { it.packageName == show.providerPackage },
-                        onClick = { Thread { za.co.dipixel.launcher.hub.Hub.playShow(context, show) }.start() },
-                        modifier = (if (i == 0) Modifier.focusRequester(firstFocus) else Modifier)
-                            .onFocusChanged { if (it.hasFocus) hero = Hero.OfShow(show, i) }
-                    )
-                }
-                item {
-                    Tile(
-                        onClick = onOpenSettings,
-                        modifier = (if (profile.shows.isEmpty()) Modifier.focusRequester(firstFocus) else Modifier).width(210.dp).height(118.dp),
-                        container = Color(0x26FFFFFF)
-                    ) {
-                        Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                            Icon(Icons.Rounded.Add, contentDescription = null, tint = Palette.textDim, modifier = Modifier.size(28.dp))
-                            Text("Add a show", color = Palette.textDim, fontSize = 13.sp)
-                            Text("or search on Mi Remote", color = Palette.textFaint, fontSize = 11.sp)
-                        }
+        // ---------- rows ----------
+        Column(Modifier.fillMaxWidth().align(Alignment.BottomStart).padding(bottom = 14.dp)) {
+            if (profile.shows.isNotEmpty()) {
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth().onFocusChanged { if (!it.hasFocus) heroShow = null },
+                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                    contentPadding = PaddingValues(start = 40.dp, end = 40.dp, top = 14.dp, bottom = 12.dp)
+                ) {
+                    itemsIndexed(profile.shows, key = { i, s -> s.title + i }) { _, show ->
+                        GlassShowCard(
+                            show = show,
+                            provider = apps.firstOrNull { it.packageName == show.providerPackage },
+                            onClick = { Thread { za.co.dipixel.launcher.hub.Hub.playShow(context, show) }.start() },
+                            modifier = Modifier.onFocusChanged { if (it.hasFocus) heroShow = show }
+                        )
                     }
                 }
+            } else {
+                Text("Shows you watch through Mi TV or Mi Remote appear here", color = Palette.textFaint, fontSize = 13.sp, fontFamily = UiFont,
+                    modifier = Modifier.padding(start = 44.dp, bottom = 10.dp))
             }
 
-            Spacer(Modifier.height(6.dp))
-
-            // ---- apps ----
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp), contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp)) {
-                itemsIndexed(favourites, key = { _, a -> a.packageName }) { _, app ->
-                    AppTile(
-                        app,
+            // dock
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(start = 40.dp, end = 40.dp, top = 10.dp, bottom = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                itemsIndexed(favourites, key = { _, a -> a.packageName }) { i, app ->
+                    DockIcon(
+                        app = app,
                         onClick = { Apps.launch(context, app.packageName) },
                         onLongClick = { appMenu = app },
-                        modifier = Modifier.onFocusChanged { if (it.hasFocus) hero = Hero.OfApp(app) }
+                        modifier = if (i == 0) Modifier.focusRequester(dockFocus) else Modifier
                     )
                 }
                 item {
-                    Tile(onClick = onOpenAllApps, modifier = Modifier.width(150.dp).height(84.dp), container = Color(0x33FFFFFF)) {
-                        Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Rounded.Apps, contentDescription = null, tint = Palette.text)
-                            Spacer(Modifier.width(8.dp))
-                            Text("All apps", color = Palette.text, fontSize = 15.sp, fontWeight = FontWeight.Medium)
-                        }
-                    }
+                    DockGlyph(Icons.Rounded.Apps, onOpenAllApps, if (favourites.isEmpty()) Modifier.focusRequester(dockFocus) else Modifier)
                 }
+                item { DockGlyph(Icons.Rounded.Settings, onOpenSettings) }
             }
         }
 
         if (config.nightMode) Box(Modifier.fillMaxSize().background(Color(0x8C1A0A00)))
 
-        // ---- app menu (hold OK on a home row app) ----
+        // ---------- menus ----------
         val menuApp = appMenu
         AnimatedVisibility(visible = menuApp != null, enter = fadeIn(), exit = fadeOut(), modifier = Modifier.align(Alignment.BottomEnd)) {
             if (menuApp != null) {
@@ -274,7 +226,6 @@ fun HomeScreen(
                 )
             }
         }
-
         AnimatedVisibility(visible = nightMenu, enter = fadeIn(), exit = fadeOut(), modifier = Modifier.align(Alignment.TopEnd)) {
             NightMenu(
                 config = config,
@@ -291,117 +242,190 @@ fun HomeScreen(
     }
 }
 
-// ------------------------------------------------------------------ hero
+// ------------------------------------------------------------------ lock screen
 
+/** Photo, then date and the big clock, then the mountain cut-out on top of the clock (iPhone depth effect). */
 @Composable
-private fun HeroBackground(hero: Hero, tint: Color) {
+private fun DepthWallpaper(wallId: String, config: Config, weather: WeatherNow?, lockAlpha: Float) {
     val context = LocalContext.current
-    val drift by rememberInfiniteTransition(label = "drift").animateFloat(
-        initialValue = 1.0f, targetValue = 1.07f,
-        animationSpec = infiniteRepeatable(tween(24_000, easing = LinearEasing), RepeatMode.Reverse), label = "scale"
-    )
-    Box(Modifier.fillMaxSize()) {
-        Box(
-            Modifier.fillMaxSize().background(
-                Brush.radialGradient(listOf(tint.copy(alpha = 0.85f), tint.copy(alpha = 0.25f), Color.Transparent), center = Offset(1500f, 200f), radius = 1600f)
-            )
-        )
+    val info = remember(wallId) { WallCatalog.get(context)[wallId] }
+    val bgId = remember(wallId) { context.resources.getIdentifier(wallId, "drawable", context.packageName) }
+    val fgId = remember(wallId) { context.resources.getIdentifier(wallId + "_fg", "drawable", context.packageName) }
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val w = maxWidth; val h = maxHeight
+        if (bgId != 0) Image(painterResource(bgId), contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
 
-        Crossfade(targetState = hero, animationSpec = tween(700), label = "hero") { h ->
-            when (h) {
-                is Hero.OfShow -> {
-                    val s = h.show
-                    if (s.backdrop.isNotBlank()) {
-                        AsyncImage(
-                            model = ImageRequest.Builder(context).data(s.backdrop).crossfade(true).build(),
-                            contentDescription = null, contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize().graphicsLayer { scaleX = drift; scaleY = drift }
-                        )
-                    } else if (s.poster.isNotBlank()) {
-                        // poster only (most movies): blurred fill plus the poster itself on the right
-                        AsyncImage(
-                            model = s.poster, contentDescription = null, contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize().blur(48.dp).graphicsLayer { alpha = 0.7f }
-                        )
-                        Box(Modifier.fillMaxSize().padding(end = 70.dp, top = 90.dp, bottom = 230.dp), contentAlignment = Alignment.CenterEnd) {
-                            AsyncImage(model = s.poster, contentDescription = null, contentScale = ContentScale.Fit, modifier = Modifier.clip(RoundedCornerShape(12.dp)))
-                        }
-                    }
-                }
-                is Hero.OfApp -> {
-                    val d = h.app.banner ?: h.app.icon
-                    val bmp = remember(h.app.packageName) { d.toBitmap(480, 270).asImageBitmap() }
-                    Image(bmp, contentDescription = null, contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize().blur(70.dp).graphicsLayer { alpha = 0.45f })
-                    Box(Modifier.fillMaxSize().padding(end = 70.dp, top = 100.dp, bottom = 260.dp), contentAlignment = Alignment.CenterEnd) {
-                        Image(bmp, contentDescription = null, contentScale = ContentScale.Crop,
-                            modifier = Modifier.width(380.dp).height(214.dp).clip(RoundedCornerShape(18.dp)))
-                    }
-                }
-                Hero.Empty -> {}
+        Box(Modifier.fillMaxSize().alpha(lockAlpha)) {
+            // date and weather line
+            DateLine(weather, Modifier.fillMaxWidth().offset(y = h * 0.105f))
+            // the clock: centred in the band 16.5% to 50% of the screen height
+            val c1 = Color(info?.c1 ?: 0xFFFFD6E0.toInt())
+            val c2 = Color(info?.c2 ?: 0xFFE6D8FF.toInt())
+            Box(Modifier.fillMaxWidth().offset(y = h * 0.165f).height(h * 0.335f), contentAlignment = Alignment.Center) {
+                BigClock(config, with(LocalDensity.current) { (h * 0.335f * 1.32f).toSp() }, c1, c2)
             }
-        }
-
-        Box(Modifier.fillMaxSize().background(Brush.horizontalGradient(0f to Color(0xF0050507), 0.45f to Color(0x99050507), 0.75f to Color(0x00050507))))
-        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0f to Color(0x99050507), 0.18f to Color(0x00050507), 0.5f to Color(0x00050507), 0.78f to Color(0xD9050507), 1f to Color(0xFF050507))))
-    }
-}
-
-@Composable
-private fun HeroInfo(hero: Hero) {
-    val shadow = Shadow(Color(0xAA000000), blurRadius = 18f)
-    Column(Modifier.width(560.dp)) {
-        when (hero) {
-            is Hero.OfShow -> {
-                val s = hero.show
-                Text(
-                    if (s.providerLabel.isNotBlank()) "CONTINUE ON ${s.providerLabel.uppercase()}" else "CONTINUE WATCHING",
-                    color = Color(0xFFF2C6E0), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 2.sp
+            // mountain in front of the clock
+            if (fgId != 0 && info != null) {
+                val r = info.fg
+                Image(
+                    painterResource(fgId), contentDescription = null, contentScale = ContentScale.FillBounds,
+                    modifier = Modifier.offset(x = w * r[0], y = h * r[1]).size(w * (r[2] - r[0]), h * (r[3] - r[1]))
                 )
-                Spacer(Modifier.height(4.dp))
-                Text(s.title, style = TextStyle(color = Color.White, fontSize = 44.sp, fontWeight = FontWeight.Bold, shadow = shadow, letterSpacing = (-0.5).sp), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                if (s.meta.isNotBlank()) Text(s.meta, color = Palette.textDim, fontSize = 14.sp, maxLines = 1)
-                if (s.summary.isNotBlank()) {
-                    Spacer(Modifier.height(6.dp))
-                    Text(s.summary, color = Palette.textDim, fontSize = 14.sp, maxLines = 2, overflow = TextOverflow.Ellipsis, lineHeight = 19.sp)
-                }
-                Spacer(Modifier.height(8.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Rounded.PlayArrow, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
-                    Text("Press OK to play", color = Palette.textFaint, fontSize = 12.sp)
-                }
             }
-            is Hero.OfApp -> {
-                Text("APP", color = Color(0xFFF2C6E0), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, letterSpacing = 2.sp)
-                Spacer(Modifier.height(4.dp))
-                Text(hero.app.label, style = TextStyle(color = Color.White, fontSize = 44.sp, fontWeight = FontWeight.Bold, shadow = shadow), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text("Press OK to open  ·  hold OK to move it", color = Palette.textFaint, fontSize = 13.sp)
-            }
-            Hero.Empty -> Text("Mi TV", style = TextStyle(color = Color.White, fontSize = 44.sp, fontWeight = FontWeight.Bold, shadow = shadow))
         }
     }
 }
-
-// ------------------------------------------------------------------ rows
 
 @Composable
-private fun ShowCard(show: Show, provider: TvApp?, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Tile(onClick = onClick, modifier = modifier.width(210.dp).height(118.dp), container = Color(0xFF1C1C22), focusedContainer = Color(0xFF2A2A33)) {
-        Box(Modifier.fillMaxSize()) {
-            val img = show.backdrop.ifBlank { show.poster }
-            if (img.isNotBlank()) {
-                AsyncImage(model = img, contentDescription = show.title, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
-            } else {
-                provider?.banner?.let { DrawableImage(it, Modifier.fillMaxSize(), ContentScale.Crop) }
-            }
-            Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0.45f to Color(0x00000000), 1f to Color(0xE6000000))))
-            provider?.icon?.let { DrawableImage(it, Modifier.padding(8.dp).size(20.dp).clip(RoundedCornerShape(5.dp)).align(Alignment.TopStart)) }
-            Text(show.title, color = Palette.text, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.align(Alignment.BottomStart).padding(horizontal = 10.dp, vertical = 8.dp))
+private fun BigClock(config: Config, size: androidx.compose.ui.unit.TextUnit, c1: Color, c2: Color) {
+    // own state so only the clock recomposes, and only when the minute changes
+    val pattern = if (config.use24h) "H:mm" else "h:mm"
+    var text by remember(pattern) { mutableStateOf(LocalDateTime.now().format(DateTimeFormatter.ofPattern(pattern))) }
+    LaunchedEffect(pattern) {
+        while (true) {
+            val t = LocalDateTime.now().format(DateTimeFormatter.ofPattern(pattern))
+            if (t != text) text = t
+            delay(1000)
+        }
+    }
+    Text(
+        text,
+        modifier = Modifier.wrapContentHeight(unbounded = true),
+        style = TextStyle(
+            fontFamily = ClockFont, fontWeight = FontWeight.Light, fontSize = size, letterSpacing = (-1).sp,
+            brush = Brush.horizontalGradient(listOf(c1.copy(alpha = 0.92f), c2.copy(alpha = 0.92f))),
+            textAlign = TextAlign.Center
+        ),
+        maxLines = 1
+    )
+}
+
+@Composable
+private fun DateLine(weather: WeatherNow?, modifier: Modifier) {
+    var date by remember { mutableStateOf(LocalDateTime.now().format(DateTimeFormatter.ofPattern("EEEE d MMMM"))) }
+    LaunchedEffect(Unit) { while (true) { delay(30_000); date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("EEEE d MMMM")) } }
+    val shadow = Shadow(Color(0x66000000), blurRadius = 10f)
+    Row(modifier, horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+        Text(date, style = TextStyle(color = Color(0xF2FFFFFF), fontSize = 18.sp, fontFamily = UiFont, fontWeight = FontWeight.SemiBold, shadow = shadow))
+        weather?.let { wt ->
+            Spacer(Modifier.width(14.dp))
+            Icon(weatherIcon(wt), contentDescription = null, tint = Color(0xF2FFFFFF), modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(6.dp))
+            Text("${wt.tempC}°  ${wt.description}", style = TextStyle(color = Color(0xF2FFFFFF), fontSize = 18.sp, fontFamily = UiFont, fontWeight = FontWeight.SemiBold, shadow = shadow))
         }
     }
 }
 
+// ------------------------------------------------------------------ show hero
+
+@Composable
+private fun ShowHero(s: Show) {
+    Box(Modifier.fillMaxSize()) {
+        val img = s.backdrop.ifBlank { s.poster }
+        if (img.isNotBlank()) AsyncImage(model = img, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+        else Box(Modifier.fillMaxSize().background(Color(0xFF101018)))
+        Box(Modifier.fillMaxSize().background(Brush.horizontalGradient(0f to Color(0xE6000000), 0.5f to Color(0x80000000), 0.8f to Color(0x00000000))))
+        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0f to Color(0x80000000), 0.2f to Color(0x00000000), 0.55f to Color(0x00000000), 1f to Color(0xE6000000))))
+        val shadow = Shadow(Color(0xAA000000), blurRadius = 18f)
+        Column(Modifier.padding(start = 44.dp, top = 120.dp).width(560.dp)) {
+            Text(
+                if (s.providerLabel.isNotBlank()) "CONTINUE ON ${s.providerLabel.uppercase()}" else "CONTINUE WATCHING",
+                color = Color(0xFFF2C6E0), fontSize = 12.sp, fontFamily = UiFont, fontWeight = FontWeight.SemiBold, letterSpacing = 2.sp
+            )
+            Spacer(Modifier.height(6.dp))
+            Text(s.title, style = TextStyle(color = Color.White, fontSize = 46.sp, fontFamily = UiFont, fontWeight = FontWeight.Bold, shadow = shadow, letterSpacing = (-0.5).sp), maxLines = 2, overflow = TextOverflow.Ellipsis)
+            if (s.meta.isNotBlank()) Text(s.meta, color = Palette.textDim, fontSize = 14.sp, fontFamily = UiFont, maxLines = 1)
+            if (s.summary.isNotBlank()) {
+                Spacer(Modifier.height(8.dp))
+                Text(s.summary, color = Palette.textDim, fontSize = 14.sp, fontFamily = UiFont, maxLines = 3, overflow = TextOverflow.Ellipsis, lineHeight = 20.sp)
+            }
+            Spacer(Modifier.height(10.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Rounded.PlayArrow, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+                Text("Press OK to play", color = Palette.textFaint, fontSize = 12.sp, fontFamily = UiFont)
+            }
+        }
+    }
+}
+
+// ------------------------------------------------------------------ parts
+
+@Composable
+private fun ProfileToggle(config: Config, onConfig: (Config) -> Unit) {
+    Row(
+        Modifier.clip(RoundedCornerShape(22.dp)).background(Color(0x40000000)).border(1.dp, Color(0x26FFFFFF), RoundedCornerShape(22.dp)).padding(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        config.profiles.forEachIndexed { i, p ->
+            val sel = i == config.activeProfile
+            Tile(
+                onClick = { onConfig(config.copy(activeProfile = i)) },
+                corner = 18,
+                container = if (sel) Color(0xE6FFFFFF) else Color.Transparent,
+                focusedContainer = if (sel) Color.White else Color(0x40FFFFFF),
+                focusedScale = 1.05f
+            ) {
+                Text(p.name, color = if (sel) Color(0xFF16161C) else Color(0xD9FFFFFF), fontSize = 14.sp, fontFamily = UiFont,
+                    fontWeight = if (sel) FontWeight.SemiBold else FontWeight.Medium, modifier = Modifier.padding(horizontal = 16.dp, vertical = 7.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun GlassCircle(icon: ImageVector, selected: Boolean = false, onClick: () -> Unit) {
+    Tile(onClick = onClick, modifier = Modifier.size(42.dp), corner = 21,
+        container = if (selected) Color(0xE6FFFFFF) else Color(0x40000000), focusedContainer = if (selected) Color.White else Color(0x59FFFFFF), focusedScale = 1.1f) {
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Icon(icon, contentDescription = null, tint = if (selected) Color(0xFF16161C) else Color.White, modifier = Modifier.size(20.dp))
+        }
+    }
+}
+
+@Composable
+private fun GlassShowCard(show: Show, provider: TvApp?, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Tile(
+        onClick = onClick, modifier = modifier.width(300.dp).height(74.dp), corner = 16,
+        container = Color(0x66101016), focusedContainer = Color(0x99202028), focusedScale = 1.06f
+    ) {
+        Row(Modifier.fillMaxSize().border(1.dp, Color(0x1FFFFFFF), RoundedCornerShape(16.dp)).padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.width(102.dp).height(58.dp).clip(RoundedCornerShape(10.dp)).background(Color(0xFF22222A))) {
+                val img = show.backdrop.ifBlank { show.poster }
+                if (img.isNotBlank()) AsyncImage(model = img, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+                else provider?.let { DrawableImage(it.icon, Modifier.fillMaxSize(), ContentScale.Crop) }
+            }
+            Spacer(Modifier.width(12.dp))
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    provider?.let { DrawableImage(it.icon, Modifier.size(12.dp).clip(RoundedCornerShape(3.dp))) ; Spacer(Modifier.width(5.dp)) }
+                    Text((provider?.label ?: show.providerLabel).uppercase(), color = Color(0x99FFFFFF), fontSize = 10.sp, fontFamily = UiFont,
+                        fontWeight = FontWeight.SemiBold, letterSpacing = 1.sp, maxLines = 1)
+                }
+                Spacer(Modifier.height(3.dp))
+                Text(show.title, color = Color.White, fontSize = 15.sp, fontFamily = UiFont, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+        }
+    }
+}
+
+@Composable
+private fun DockIcon(app: TvApp, onClick: () -> Unit, onLongClick: () -> Unit, modifier: Modifier = Modifier) {
+    Tile(onClick = onClick, onLongClick = onLongClick, modifier = modifier.size(64.dp), corner = 16,
+        container = Color(0xFF1C1C22), focusedContainer = Color(0xFF1C1C22), focusedScale = 1.14f) {
+        DrawableImage(app.icon, Modifier.fillMaxSize(), ContentScale.Crop)
+    }
+}
+
+@Composable
+private fun DockGlyph(icon: ImageVector, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Tile(onClick = onClick, modifier = modifier.size(64.dp), corner = 16, container = Color(0x4D000000), focusedContainer = Color(0x66FFFFFF), focusedScale = 1.14f) {
+        Box(Modifier.fillMaxSize().border(1.dp, Color(0x26FFFFFF), RoundedCornerShape(16.dp)), contentAlignment = Alignment.Center) {
+            Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(28.dp))
+        }
+    }
+}
+
+/** Used by the All apps screen. */
 @Composable
 fun AppTile(app: TvApp, onClick: () -> Unit, onLongClick: (() -> Unit)? = null, modifier: Modifier = Modifier) {
     Tile(onClick = onClick, onLongClick = onLongClick, modifier = modifier.width(150.dp).height(84.dp), container = Color(0xFF1C1C22), focusedContainer = Color(0xFF1C1C22)) {
@@ -425,7 +449,7 @@ private class Slot(val exact: List<String>, val contains: List<String> = emptyLi
 private val DEFAULT_ROW = listOf(
     Slot(listOf("netflix"), listOf("netflix")),
     Slot(listOf("google search", "search", "google", "google assistant")),
-    Slot(listOf("dstv", "dstv now"), listOf("dstv")),
+    Slot(listOf("dstv", "dstv now", "dstv stream"), listOf("dstv")),
     Slot(listOf("spotify"), listOf("spotify")),
     Slot(listOf("youtube")),
     Slot(listOf("youtube kids"), listOf("youtube kids"))
@@ -463,10 +487,10 @@ private fun NightMenu(config: Config, onClose: () -> Unit, onToggleNight: () -> 
     val focus = remember { FocusRequester() }
     LaunchedEffect(Unit) { try { focus.requestFocus() } catch (e: Exception) {} }
     Column(
-        Modifier.padding(top = 84.dp, end = 48.dp).width(260.dp).clip(RoundedCornerShape(20.dp)).background(Color(0xE6141418)).padding(14.dp),
+        Modifier.padding(top = 80.dp, end = 40.dp).width(260.dp).clip(RoundedCornerShape(20.dp)).background(Color(0xE6141418)).padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Text("Night", color = Palette.text, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(start = 6.dp, bottom = 4.dp))
+        Text("Night", color = Palette.text, fontSize = 18.sp, fontFamily = UiFont, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(start = 6.dp, bottom = 4.dp))
         MenuRow(if (config.nightMode) "Night mode: on" else "Night mode: off", onToggleNight, Modifier.focusRequester(focus))
         Text("Sleep timer", color = Palette.textFaint, fontSize = 12.sp, modifier = Modifier.padding(start = 6.dp, top = 6.dp))
         listOf(15, 30, 45, 60, 90).forEach { m -> MenuRow("$m minutes", { onSleep(m) }) }
@@ -479,7 +503,7 @@ private fun NightMenu(config: Config, onClose: () -> Unit, onToggleNight: () -> 
 private fun MenuRow(label: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Tile(onClick = onClick, modifier = modifier.fillMaxWidth().height(40.dp), corner = 10, container = Color(0x14FFFFFF), focusedScale = 1.02f) {
         Box(Modifier.fillMaxSize().padding(horizontal = 12.dp), contentAlignment = Alignment.CenterStart) {
-            Text(label, color = Palette.text, fontSize = 15.sp)
+            Text(label, color = Palette.text, fontSize = 15.sp, fontFamily = UiFont)
         }
     }
 }
@@ -489,10 +513,10 @@ private fun AppMenu(app: TvApp, canLeft: Boolean, canRight: Boolean, onLeft: () 
     val focus = remember { FocusRequester() }
     LaunchedEffect(app.packageName) { try { focus.requestFocus() } catch (e: Exception) {} }
     Column(
-        Modifier.padding(bottom = 110.dp, end = 48.dp).width(260.dp).clip(RoundedCornerShape(20.dp)).background(Color(0xE6141418)).padding(14.dp),
+        Modifier.padding(bottom = 110.dp, end = 40.dp).width(260.dp).clip(RoundedCornerShape(20.dp)).background(Color(0xE6141418)).padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Text(app.label, color = Palette.text, fontSize = 18.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, modifier = Modifier.padding(start = 6.dp, bottom = 4.dp))
+        Text(app.label, color = Palette.text, fontSize = 18.sp, fontFamily = UiFont, fontWeight = FontWeight.SemiBold, maxLines = 1, modifier = Modifier.padding(start = 6.dp, bottom = 4.dp))
         if (canLeft) MenuRow("Move left", onLeft, Modifier.focusRequester(focus))
         if (canRight) MenuRow("Move right", onRight, if (canLeft) Modifier else Modifier.focusRequester(focus))
         MenuRow("Unpin from home", onUnpin, if (!canLeft && !canRight) Modifier.focusRequester(focus) else Modifier)
@@ -507,3 +531,5 @@ fun SleepingScreen() {
         Text("Sleeping  ·  press any button", color = Color(0x40FFFFFF), fontSize = 13.sp, modifier = Modifier.padding(32.dp))
     }
 }
+
+@Suppress("unused") private val keepBorder = BorderStroke(1.dp, Color.White)

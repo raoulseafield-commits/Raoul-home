@@ -19,13 +19,12 @@ import za.co.dipixel.launcher.data.Wallpapers
 import java.io.InputStream
 import kotlin.random.Random
 
-/** "Mi TV Art" screensaver: museum paintings, slow pan and zoom, small clock, title and artist. */
+/** "Mi TV Art" screensaver: museum paintings, slow pan and zoom, small time and weather bottom right. */
 class ArtDream : DreamService() {
 
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var views: Array<ImageView>
-    private lateinit var title: TextView
-    private lateinit var artist: TextView
+    private var weatherView: TextView? = null
     private var front = 0
     private var queue: MutableList<Art> = mutableListOf()
     private var fallbackIndex = 0
@@ -45,27 +44,24 @@ class ArtDream : DreamService() {
                 root.addView(this, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
             }
         }
-        // soft dark band at the bottom so the caption always reads
-        root.addView(View(this).apply {
-            background = GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP, intArrayOf(0x99000000.toInt(), 0x00000000))
-        }, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(220), Gravity.BOTTOM))
-
-        val caption = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(dp(56), 0, dp(56), dp(40))
+        // just the time and weather, small, bottom right
+        val corner = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(0, 0, dp(40), dp(30))
         }
-        title = TextView(this).apply { setTextColor(Color.WHITE); textSize = 20f; setShadowLayer(8f, 0f, 2f, Color.BLACK) }
-        artist = TextView(this).apply { setTextColor(0xCCFFFFFF.toInt()); textSize = 15f; setShadowLayer(8f, 0f, 2f, Color.BLACK) }
-        caption.addView(title); caption.addView(artist)
-        root.addView(caption, FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM or Gravity.START))
-
         val clock = TextClock(this).apply {
-            format24Hour = "HH:mm"; format12Hour = "h:mm"
-            setTextColor(Color.WHITE); textSize = 34f
-            setShadowLayer(10f, 0f, 2f, Color.BLACK)
-            setPadding(0, 0, dp(56), dp(40))
+            format24Hour = "H:mm"; format12Hour = "h:mm"
+            setTextColor(0xE6FFFFFF.toInt()); textSize = 18f
+            setShadowLayer(8f, 0f, 1f, 0xAA000000.toInt())
         }
-        root.addView(clock, FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM or Gravity.END))
+        weatherView = TextView(this).apply {
+            setTextColor(0xCCFFFFFF.toInt()); textSize = 15f
+            setShadowLayer(8f, 0f, 1f, 0xAA000000.toInt())
+            setPadding(dp(10), 0, 0, 0)
+        }
+        corner.addView(clock); corner.addView(weatherView)
+        root.addView(corner, FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM or Gravity.END))
 
         setContentView(root)
     }
@@ -74,6 +70,11 @@ class ArtDream : DreamService() {
         super.onDreamingStarted()
         ArtRepo.refreshIfDue(this)
         next()
+        Thread {
+            val c = za.co.dipixel.launcher.data.ConfigStore.load(this)
+            val w = kotlinx.coroutines.runBlocking { za.co.dipixel.launcher.data.Weather.fetch(c.latitude, c.longitude) }
+            if (w != null) handler.post { weatherView?.text = "·  ${w.tempC}°  ${w.description}" }
+        }.start()
     }
 
     override fun onDreamingStopped() {
@@ -110,8 +111,7 @@ class ArtDream : DreamService() {
         }.start()
         outgoing.animate().alpha(0f).setDuration(2500).start()
         front = 1 - front
-        title.text = art?.title ?: ""
-        artist.text = art?.artist ?: ""
+
     }
 
     private fun load(art: Art): Bitmap? = try {
