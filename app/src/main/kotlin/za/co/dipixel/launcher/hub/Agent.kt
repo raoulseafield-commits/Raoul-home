@@ -47,7 +47,7 @@ object Agent {
     fun status(c: Context): JSONObject = JSONObject().put("ok", true).put("hasKey", key(c).isNotBlank())
         .put("subscriptions", JSONArray(subscriptions(c))).put("model", prefs(c).getString("model", MODELS.first()))
 
-    fun reset(session: String) = synchronized(sessions) { sessions.remove(session) }
+    fun reset(session: String) { synchronized(sessions) { sessions.remove(session) } }
 
     // ---------------- entry ----------------
 
