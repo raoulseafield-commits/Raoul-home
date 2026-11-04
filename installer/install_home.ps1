@@ -99,8 +99,10 @@ $res = & $adb install -r -g $apk 2>&1
 Log "$res"
 if ("$res" -notmatch "Success") { Log "Install failed. Stopping."; exit 1 }
 
-# Overlay permission so the sleep timer can bring the launcher forward
+# Overlay (sleep timer), app usage (what's on screen), now playing (Continue watching fills itself)
 & $adb shell appops set $pkg SYSTEM_ALERT_WINDOW allow 2>&1 | Out-Null
+& $adb shell appops set $pkg GET_USAGE_STATS allow 2>&1 | Out-Null
+& $adb shell cmd notification allow_listener "$pkg/$pkg.watch.WatchListener" 2>&1 | Out-Null
 
 # 6. Launch it once and check it comes up
 & $adb shell am start -n "$pkg/.MainActivity" | Out-Null
@@ -132,4 +134,8 @@ if ($focus -match $pkg) {
 & $adb shell settings put secure screensaver_components "$pkg/$pkg.art.ArtDream" | Out-Null
 & $adb shell settings put secure screensaver_default_component "$pkg/$pkg.art.ArtDream" | Out-Null
 Log ("Screensaver set to: " + (& $adb shell settings get secure screensaver_components))
+Log "If the TV shows 'Allow USB debugging?': tick Always allow, then press Allow. That turns on instant buttons for Mi Remote."
+Start-Sleep 15
+$inj = (& $adb shell "tail -n 3 /data/local/tmp/mitv_injector.log 2>/dev/null" | Out-String).Trim()
+if ($inj -match "listening") { Log "Instant buttons: ON" } else { Log "Instant buttons: not running yet ($inj). Accept the prompt on the TV; Mi TV retries every 30 s." }
 Log "Done. Press Home on the remote."
