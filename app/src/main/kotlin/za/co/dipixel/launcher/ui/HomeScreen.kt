@@ -76,6 +76,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.core.graphics.drawable.toBitmap
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.graphicsLayer
 import za.co.dipixel.launcher.R
@@ -451,7 +452,7 @@ private fun DockGlyph(icon: ImageVector, onClick: () -> Unit, modifier: Modifier
 
 /** True for round or cut-out icons (Spotify) that would look oversized when stretched to the tile. */
 private fun cornersSeeThrough(d: android.graphics.drawable.Drawable): Boolean = try {
-    val b = androidx.core.graphics.drawable.toBitmap(d, 96, 96)
+    val b = d.toBitmap(96, 96)
     val pts = listOf(2 to 2, 93 to 2, 2 to 93, 93 to 93, 10 to 10)
     pts.count { (x, y) -> android.graphics.Color.alpha(b.getPixel(x, y)) < 40 } >= 3
 } catch (e: Exception) { false }
