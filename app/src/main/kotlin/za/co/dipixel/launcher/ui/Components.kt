@@ -103,10 +103,10 @@ val RingColors = listOf(Color(0xFF7B4FD0), Color(0xFFE0609B), Color(0xFFF2C6E0),
 @Composable
 fun FocusRing(corner: Int, modifier: Modifier = Modifier) {
     val t = rememberInfiniteTransition(label = "ring")
-    val angle by t.animateFloat(0f, 360f, infiniteRepeatable(tween(3600, easing = LinearEasing)), label = "angle")
-    val pulse by t.animateFloat(0f, 1f, infiniteRepeatable(tween(1300, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "pulse")
+    val angle by t.animateFloat(0f, 360f, infiniteRepeatable(tween(14000, easing = LinearEasing)), label = "angle")
+    val pulse by t.animateFloat(0f, 1f, infiniteRepeatable(tween(1800, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "pulse")
     Canvas(modifier) {
-        val w = (1.5f + 0.9f * pulse).dp.toPx()
+        val w = (1.0f + 0.4f * pulse).dp.toPx()
         val rad = Math.toRadians(angle.toDouble())
         val r = size.maxDimension / 2f
         val c = center

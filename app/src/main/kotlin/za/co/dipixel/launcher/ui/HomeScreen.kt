@@ -75,6 +75,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.graphicsLayer
 import za.co.dipixel.launcher.R
 import za.co.dipixel.launcher.data.Apps
 import za.co.dipixel.launcher.data.Config
@@ -167,17 +170,39 @@ fun HomeScreen(
         // ---------- rows ----------
         Column(Modifier.fillMaxWidth().align(Alignment.BottomStart).padding(bottom = 14.dp)) {
             if (profile.shows.isNotEmpty()) {
+                val rowState = androidx.compose.foundation.lazy.rememberLazyListState()
+                val rowScope = androidx.compose.runtime.rememberCoroutineScope()
                 LazyRow(
-                    modifier = Modifier.fillMaxWidth().onFocusChanged { if (!it.hasFocus) heroShow = null },
+                    state = rowState,
+                    modifier = Modifier.fillMaxWidth()
+                        .onFocusChanged { if (!it.hasFocus) heroShow = null }
+                        // 1st card full, 2nd a soft fade, 3rd barely there
+                        .graphicsLayer(compositingStrategy = androidx.compose.ui.graphics.CompositingStrategy.Offscreen)
+                        .drawWithContent {
+                            drawContent()
+                            val w = size.width; val d = density
+                            drawRect(
+                                Brush.horizontalGradient(
+                                    0f to Color.Black,
+                                    (262f * d / w) to Color.Black,
+                                    (474f * d / w) to Color(0xB3000000),
+                                    (560f * d / w) to Color(0x26000000),
+                                    (700f * d / w).coerceAtMost(1f) to Color.Transparent
+                                ),
+                                blendMode = androidx.compose.ui.graphics.BlendMode.DstIn
+                            )
+                        },
                     horizontalArrangement = Arrangement.spacedBy(14.dp),
                     contentPadding = PaddingValues(start = 40.dp, end = 40.dp, top = 12.dp, bottom = 10.dp)
                 ) {
-                    itemsIndexed(profile.shows, key = { i, s -> s.title + i }) { _, show ->
+                    itemsIndexed(profile.shows, key = { i, s -> s.title + i }) { idx, show ->
                         ShowCard(
                             show = show,
                             provider = apps.firstOrNull { it.packageName == show.providerPackage },
                             onClick = { Thread { za.co.dipixel.launcher.hub.Hub.playShow(context, show) }.start() },
-                            modifier = Modifier.onFocusChanged { if (it.hasFocus) heroShow = show }
+                            modifier = Modifier.onFocusChanged {
+                                if (it.hasFocus) { heroShow = show; rowScope.launch { rowState.animateScrollToItem(idx) } }
+                            }
                         )
                     }
                 }
@@ -366,11 +391,11 @@ private fun ProfileToggle(config: Config, onConfig: (Config) -> Unit) {
             Tile(
                 onClick = { onConfig(config.copy(activeProfile = i)) },
                 corner = 18,
-                container = if (sel) Color(0xE6FFFFFF) else Color.Transparent,
-                focusedContainer = if (sel) Color.White else Color(0x40FFFFFF),
+                container = Color.Transparent,
+                focusedContainer = Color(0x1AFFFFFF),
                 focusedScale = 1.05f
             ) {
-                Text(p.name, color = if (sel) Color(0xFF16161C) else Color(0xD9FFFFFF), fontSize = 14.sp, fontFamily = UiFont,
+                Text(p.name, color = if (sel) Color.White else Color(0x73FFFFFF), fontSize = 14.sp, fontFamily = UiFont,
                     fontWeight = if (sel) FontWeight.SemiBold else FontWeight.Medium, modifier = Modifier.padding(horizontal = 16.dp, vertical = 7.dp))
             }
         }
@@ -407,9 +432,11 @@ private fun ShowCard(show: Show, provider: TvApp?, onClick: () -> Unit, modifier
 
 @Composable
 private fun DockIcon(app: TvApp, onClick: () -> Unit, onLongClick: () -> Unit, modifier: Modifier = Modifier) {
+    val see = remember(app.packageName) { cornersSeeThrough(app.icon) }
     Tile(onClick = onClick, onLongClick = onLongClick, modifier = modifier.size(64.dp), corner = 16,
-        container = Color(0xFF1C1C22), focusedContainer = Color(0xFF1C1C22), focusedScale = 1.14f) {
-        DrawableImage(app.icon, Modifier.fillMaxSize(), ContentScale.Crop)
+        container = Color(0xFF16161B), focusedContainer = Color(0xFF16161B), focusedScale = 1.14f) {
+        if (see) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { DrawableImage(app.icon, Modifier.size(40.dp), ContentScale.Fit) }
+        else DrawableImage(app.icon, Modifier.fillMaxSize(), ContentScale.Crop)
     }
 }
 
@@ -421,6 +448,13 @@ private fun DockGlyph(icon: ImageVector, onClick: () -> Unit, modifier: Modifier
         }
     }
 }
+
+/** True for round or cut-out icons (Spotify) that would look oversized when stretched to the tile. */
+private fun cornersSeeThrough(d: android.graphics.drawable.Drawable): Boolean = try {
+    val b = androidx.core.graphics.drawable.toBitmap(d, 96, 96)
+    val pts = listOf(2 to 2, 93 to 2, 2 to 93, 93 to 93, 10 to 10)
+    pts.count { (x, y) -> android.graphics.Color.alpha(b.getPixel(x, y)) < 40 } >= 3
+} catch (e: Exception) { false }
 
 /** Used by the All apps screen. */
 @Composable

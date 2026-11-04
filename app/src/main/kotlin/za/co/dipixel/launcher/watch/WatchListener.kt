@@ -58,6 +58,12 @@ object Watching {
     private val musicHints = listOf("spotify", "music", "deezer", "soundcloud", "radio", "podcast", "audible", "tidal")
     private val passiveSkip = listOf("youtube")   // YouTube clips would flood the row; explicit plays still count
 
+    /** "The Big Bang Theory" and "Big bang theory" are the same show. */
+    fun same(a: String, b: String): Boolean {
+        fun k(t: String) = t.lowercase().removePrefix("the ").replace(Regex("[^a-z0-9]"), "")
+        return k(a) == k(b)
+    }
+
     fun isMusic(pkg: String) = musicHints.any { pkg.contains(it, true) }
 
     fun check(context: Context, c: MediaController) {
@@ -96,13 +102,13 @@ object Watching {
         var saved: Show? = null
         ConfigStore.update(context) { c ->
             val p = c.profiles.getOrNull(c.activeProfile) ?: return@update c
-            val old = p.shows.firstOrNull { it.title.equals(title, true) }
+            val old = p.shows.firstOrNull { same(it.title, title) }
             val s = (old ?: art ?: Show(title, pkg, label)).copy(
                 title = old?.title ?: title, providerPackage = pkg, providerLabel = label,
                 url = url.ifBlank { old?.url ?: art?.url ?: "" }
             )
             saved = s
-            val shows = (listOf(s) + p.shows.filter { !it.title.equals(title, true) }).take(12)
+            val shows = (listOf(s) + p.shows.filter { !same(it.title, title) }).take(12)
             c.copy(profiles = c.profiles.mapIndexed { i, pr -> if (i == c.activeProfile) pr.copy(shows = shows) else pr })
         }
         val s = saved ?: return

@@ -53,7 +53,8 @@ data class Profile(val name: String, val shows: List<Show>, val appProfile: Int 
             val arr = o.optJSONArray("shows") ?: JSONArray()
             return Profile(
                 name = o.optString("name", "Profile"),
-                shows = (0 until arr.length()).map { Show.fromJson(arr.getJSONObject(it)) },
+                shows = (0 until arr.length()).map { Show.fromJson(arr.getJSONObject(it)) }
+                    .distinctBy { it.title.lowercase().removePrefix("the ").replace(Regex("[^a-z0-9]"), "") },
                 appProfile = o.optInt("appProfile", 0).coerceIn(0, 4)
             )
         }
