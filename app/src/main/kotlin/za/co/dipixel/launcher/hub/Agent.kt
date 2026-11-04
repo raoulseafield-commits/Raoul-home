@@ -365,7 +365,7 @@ TV commands: tv_control. Opening an app: open_app. "What's on" or "what am I wat
                 mine.length() > 0 -> "I found $name. It's on ${mine.getString(0)}. Want me to play it?"
                 noApp.length() > 0 -> "$name is on ${noApp.getString(0)}, but the ${noApp.getString(0)} app isn't installed on the TV."
                 elsewhere.length() > 0 -> "$name is streaming on ${elsewhere.getString(0)}, which you don't have."
-                rent.length() > 0 -> "$name isn't on ${subscriptions(context).joinToString(" or ")} yet. You can rent or buy it on ${rent.getString(0)}."
+                rent.length() > 0 -> "$name isn't on ${subscriptions(context).filterNot { Watching.isMusic(it) }.joinToString(" or ")} yet. You can rent or buy it on ${rent.getString(0)}."
                 else -> "I found $name, but it isn't available to stream in South Africa yet."
             }
             return Reply(text, cards)
