@@ -39,8 +39,9 @@ object Injector {
             val main = InjectorMain::class.java.name
             // [M] stops pkill matching this very shell command
             val pattern = main.replace("InjectorMain", "Injector[M]ain")
-            val cmd = "pkill -f '$pattern'; sleep 0.3; (CLASSPATH=${Shell.quote(apk)} nohup app_process /system/bin $main </dev/null >$LOG 2>&1 &)"
-            if (Shell.run(context, cmd) == null) { lastStartResult = "adb not available"; return false }
+            val cmd = "pkill -f '$pattern'; sleep 0.3; (CLASSPATH=${Shell.quote(apk)} setsid nohup app_process /system/bin $main </dev/null >$LOG 2>&1 &) ; exit 0"
+            if (Shell.run(context, "echo ok") == null) { lastStartResult = "adb not approved on the TV yet"; return false }
+            Shell.runDetached(context, cmd)
             for (i in 0 until 25) {
                 Thread.sleep(200)
                 if (connect()) { lastStartResult = "running"; return true }

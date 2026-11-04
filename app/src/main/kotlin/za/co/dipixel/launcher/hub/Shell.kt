@@ -40,6 +40,24 @@ object Shell {
         return Dadb.create("127.0.0.1", 5555, AdbKeyPair.read(priv, pub))
     }
 
+    /**
+     * Fire-and-forget command on its own adb connection: never holds the main lock and
+     * gives up waiting after [waitMs] (for starting background helpers).
+     */
+    fun runDetached(context: Context, command: String, waitMs: Long = 5000): Boolean {
+        var ok = false
+        val t = Thread {
+            try {
+                val d = connect(context)
+                try { d.shell(command); ok = true } finally { try { d.close() } catch (_: Throwable) {} }
+            } catch (e: Throwable) { }
+        }
+        t.isDaemon = true
+        t.start()
+        t.join(waitMs)
+        return ok || t.isAlive      // still running = command started and is being held open: fine
+    }
+
     /** Wrap a value for the device shell. */
     fun quote(s: String): String = "'" + s.replace("'", "'\\''") + "'"
 

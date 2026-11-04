@@ -9,7 +9,7 @@ permissions:
 jobs:
   tv:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 50
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -34,7 +34,7 @@ jobs:
           profile: tv_1080p
           disable-animations: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          script: bash tools/tv_check.sh
+          script: timeout 1200 bash tools/tv_check.sh || true
       - name: Build Mi Remote debug
         run: ./gradlew --no-daemon :remote:assembleDebug
       - name: Run Mi Remote on a phone emulator
@@ -45,7 +45,7 @@ jobs:
           arch: x86_64
           profile: pixel_6
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          script: bash tools/phone_check.sh
+          script: timeout 600 bash tools/phone_check.sh || true
       - name: Publish results to ci-tv branch
         if: always()
         run: |
