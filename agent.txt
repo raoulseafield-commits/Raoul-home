@@ -1,0 +1,18 @@
+>> what's the latest superman movie
+Superman (2025) isn't on Netflix or DStv yet. You can rent or buy it on Apple TV Store.
+   card: Superman 2025 [] []
+   card: Superman: Man of Tomorrow 2020 [] []
+   card: Man of Steel 2013 [] []
+>> where can i watch the big bang theory
+The Big Bang Theory (2007) is on Netflix, but the Netflix app isn't installed on the TV.
+   card: The Big Bang Theory 2007 [] []
+   card: The Big Short 2015 [] []
+   card: Nanny McPhee and the Big Bang 2010 [] []
+>> play it
+The Big Bang Theory is on Netflix, but that app isn't installed on the TV.
+>> play staying alive
+Staying Alive isn't on your services.
+>> play the big bang theory
+The Big Bang Theory is on Netflix, but that app isn't installed on the TV.
+>> play shaka ilembe on dstv
+DStv isn't set up as one of your apps.

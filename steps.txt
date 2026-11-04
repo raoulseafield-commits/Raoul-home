@@ -1,0 +1,18 @@
+== install
+Performing Streamed Install
+Success
+== start the key helper the same way Mi TV does on the box
+Mi TV injector starting, pid 3253
+Mi TV injector listening on 8766
+== pair like a phone would
+== navigate
+== diagnostics
+== key latency through the hub (each call presses a key on the TV)
+== agent without a key (built-in rules)
+== agent: songs and DStv
+== remote Assistant button
+Unknown command: get-role-holders
+za.co.dipixel.launcher/.voice.AssistActivity
+Starting: Intent { act=android.intent.action.ASSIST }
+za.co.dipixel.launcher/za.co.dipixel.launcher.watch.ScreenReader
+== art + lofi mode

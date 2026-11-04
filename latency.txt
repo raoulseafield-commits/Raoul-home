@@ -1,0 +1,8 @@
+down 0.082056s
+right 0.030733s
+left 0.102605s
+right 0.083318s
+left 0.038567s
+up 0.190177s
+volup 0.120395s
+voldown 0.176463s

@@ -1,0 +1,2 @@
+shell         3253     1 1652784 156540 do_sys_poll         0 S app_process
+u0_a80        3338   305 1447284 241248 0                   0 S za.co.dipixel.launcher

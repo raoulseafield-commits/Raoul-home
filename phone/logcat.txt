@@ -1,0 +1,418 @@
+I/SystemConfig(  483): Reading permissions from /system/etc/permissions/com.android.media.remotedisplay.xml
+I/PackageManager(  483): /system_ext/priv-app/RemoteProvisioner changed; collecting certs
+I/SupplicantStaIfaceHalAidlImpl(  483): Remote Version: 1
+W/DefaultPermGrantPolicy(  483): Permission not found: android.permission.CHECK_REMOTE_LOCKSCREEN
+W/DefaultPermGrantPolicy(  483): Permission not found: com.google.android.wearable.permission.URI_REDIRECT_TO_REMOTE
+W/DefaultPermGrantPolicy(  483): Permission not found: android.permission.PROVIDE_REMOTE_CREDENTIALS
+V/WindowManagerShell(  761): addHandler: Remote
+W/BatteryControllerGoogle(  761): Caused by: android.os.RemoteException: Remote stack trace:
+W/RemoteSmartspaceService(  483): could not bind to Intent { act=android.service.smartspace.SmartspaceService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiSmartspaceService } using flags 67112961
+W/RemoteSmartspaceService(  483): could not bind to Intent { act=android.service.smartspace.SmartspaceService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiSmartspaceService } using flags 67112961
+W/RemoteSmartspaceService(  483): could not bind to Intent { act=android.service.smartspace.SmartspaceService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiSmartspaceService } using flags 67112961
+W/RemoteSmartspaceService(  483): could not bind to Intent { act=android.service.smartspace.SmartspaceService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiSmartspaceService } using flags 67112961
+I/AndroidRuntime(  886): VM exiting with result code 0, cleanup skipped.
+V/StorageManagerService(  483): Package com.android.remoteprovisioner does not have legacy storage
+D/nativeloader( 1058): Configuring classloader-namespace for other apk /system/framework/com.android.media.remotedisplay.jar. target_sdk_version=33, uses_libraries=ALL, library_path=/product/priv-app/PrebuiltGmsCore/lib/x86_64:/product/priv-app/PrebuiltGmsCore/PrebuiltGmsCore.apk!/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/com.google.android.gms
+D/ContentCapturePerUserService(  483): updateRemoteService(): creating new remote service for ComponentInfo{com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiContentCaptureService}
+D/ContentCapturePerUserService(  483): updateRemoteService(): destroying old remote service
+D/ContentCapturePerUserService(  483): updateRemoteService(): creating new remote service for ComponentInfo{com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiContentCaptureService}
+E/RemoteAugmentedAutofillService(  483): Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+W/RemoteSystemCaptionsManagerService(  483): Could not bind to Intent { act=android.service.systemcaptions.SystemCaptionsManagerService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.captions.SystemCaptionsManagerService } with flags 67112961
+W/RemoteContentCaptureService(  483): could not bind to Intent { act=android.service.contentcapture.ContentCaptureService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiContentCaptureService } using flags 67112961
+W/ContentCapturePerUserService(  483): remote service died: RemoteContentCaptureService[ComponentInfo{com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiContentCaptureService} 1562414 (unbound)]
+W/RemoteContentCaptureService(  483): could not bind to Intent { act=android.service.contentcapture.ContentCaptureService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiContentCaptureService } using flags 67112961
+W/ContentCapturePerUserService(  483): remote service died: RemoteContentCaptureService[ComponentInfo{com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiContentCaptureService} 150473288 (unbound)]
+D/nativeloader( 1284): Configuring classloader-namespace for other apk /system/framework/com.android.media.remotedisplay.jar. target_sdk_version=33, uses_libraries=ALL, library_path=/product/priv-app/PrebuiltGmsCore/lib/x86_64:/product/priv-app/PrebuiltGmsCore/PrebuiltGmsCore.apk!/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/com.google.android.gms
+I/DynamiteModule( 1058): Considering local module com.google.android.gms.providerinstaller.dynamite:1 and remote module com.google.android.gms.providerinstaller.dynamite:0
+I/DynamiteModule( 1284): Considering local module com.google.android.gms.providerinstaller.dynamite:1 and remote module com.google.android.gms.providerinstaller.dynamite:0
+W/GmsCoreLogger( 1058): android.os.RemoteException: The com.google.android.gms.auth.accounts provider is not available.
+I/DynamiteModule( 1058): Considering local module com.google.android.gms.googlecertificates:7 and remote module com.google.android.gms.googlecertificates:7
+W/GmsCoreLogger( 1284): android.os.RemoteException: The com.google.android.gms.auth.accounts provider is not available.
+W/RemoteSmartspaceService(  483): could not bind to Intent { act=android.service.smartspace.SmartspaceService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiSmartspaceService } using flags 67112961
+W/RemoteSmartspaceService(  483): could not bind to Intent { act=android.service.smartspace.SmartspaceService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiSmartspaceService } using flags 67112961
+W/RemoteSmartspaceService(  483): could not bind to Intent { act=android.service.smartspace.SmartspaceService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiSmartspaceService } using flags 67112961
+W/RemoteSmartspaceService(  483): could not bind to Intent { act=android.service.smartspace.SmartspaceService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiSmartspaceService } using flags 67112961
+W/RemoteSmartspaceService(  483): could not bind to Intent { act=android.service.smartspace.SmartspaceService cmp=com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiSmartspaceService } using flags 67112961
+D/ContentCapturePerUserService(  483): updateRemoteService(): creating new remote service for ComponentInfo{com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiContentCaptureService}
+D/ContentCapturePerUserService(  483): updateRemoteService(): destroying old remote service
+D/ContentCapturePerUserService(  483): updateRemoteService(): creating new remote service for ComponentInfo{com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiContentCaptureService}
+D/AmbientContextManagerPerUserService(  483): Trying to cancel the remote request. Reason: Service destroyed.
+I/DynamiteModule( 1492): Considering local module com.google.android.gms.cronet_dynamite:0 and remote module com.google.android.gms.cronet_dynamite:2411
+I/DynamiteModule( 1492): Selected remote version of com.google.android.gms.cronet_dynamite, version >= 2411
+I/DynamiteModule( 1284): Considering local module com.google.android.gms.googlecertificates:7 and remote module com.google.android.gms.googlecertificates:7
+W/BcSmartspaceView( 1015): Caused by: android.os.RemoteException: Remote stack trace:
+W/BroadcastQueue(  483): Association not allowed: broadcasting Intent { act=android.net.wifi.STATE_CHANGE flg=0x4000010 (has extras) } from null (pid=-1, uid=-1) to com.google.android.as through BroadcastFilter{987e6aa 10118/u0 ReceiverList{9ba223 1649 com.google.android.as/10118/u0 remote:cffbf52}}
+I/Launcher.IconCache( 1015): Database bulk icon loading failed, using fallback bulk icon loading for: ComponentInfo{za.co.dipixel.remote/za.co.dipixel.remote.MainActivity}
+V/BackupManagerService(  483): [UserID:0] restoreAtInstall pkg=za.co.dipixel.remote token=1 restoreSet=0
+I/ActivityTaskManager(  483): START u0 {flg=0x10000000 cmp=za.co.dipixel.remote/.MainActivity} from uid 2000
+D/CoreBackPreview(  483): Window{ef42476 u0 Splash Screen za.co.dipixel.remote}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@29a06e4, mPriority=0}
+I/DynamiteModule( 1517): Considering local module com.google.android.gms.googlecertificates:0 and remote module com.google.android.gms.googlecertificates:7
+I/DynamiteModule( 1517): Selected remote version of com.google.android.gms.googlecertificates, version >= 7
+D/MediaPlayerList(  954): Name of package changed: za.co.dipixel.remote
+I/SdkSandboxManager(  483): No SDKs used. Skipping SDK data reconcilation for CallingInfo{mUid=10174, mPackageName='za.co.dipixel.remote'}
+D/MediaPlayerList(  954): Name of package changed: za.co.dipixel.remote
+I/ActivityManager(  483): Start proc 2449:za.co.dipixel.remote/u0a174 for next-top-activity {za.co.dipixel.remote/za.co.dipixel.remote.MainActivity}
+I/.dipixel.remote( 2449): Late-enabling -Xcheck:jni
+I/.dipixel.remote( 2449): Using CollectorTypeCC GC.
+W/.dipixel.remote( 2449): Unexpected CPU variant for x86: x86_64.
+W/.dipixel.remote( 2449): Known variants: atom, sandybridge, silvermont, kabylake, default
+I/DynamiteModule( 1741): Considering local module com.google.android.gms.cast.framework.dynamite:0 and remote module com.google.android.gms.cast.framework.dynamite:226
+I/DynamiteModule( 1741): Selected remote version of com.google.android.gms.cast.framework.dynamite, version >= 226
+W/ziparchive( 2449): Unable to open '/data/app/~~tsDRqpaf4bRfGdfHRBSv8w==/za.co.dipixel.remote-zVigpFgrR7JE483J0SOKMg==/base.dm': No such file or directory
+W/ziparchive( 2449): Unable to open '/data/app/~~tsDRqpaf4bRfGdfHRBSv8w==/za.co.dipixel.remote-zVigpFgrR7JE483J0SOKMg==/base.dm': No such file or directory
+W/ProviderInstaller( 1757): Failed to load providerinstaller module: No acceptable module com.google.android.gms.providerinstaller.dynamite found. Local version is 0 and remote version is 0.
+I/DynamiteModule( 1741): Considering local module com.google.android.gms.googlecertificates:0 and remote module com.google.android.gms.googlecertificates:7
+I/DynamiteModule( 1741): Selected remote version of com.google.android.gms.googlecertificates, version >= 7
+D/nativeloader( 1757): Configuring classloader-namespace for other apk /system/framework/com.android.media.remotedisplay.jar. target_sdk_version=33, uses_libraries=ALL, library_path=/product/priv-app/PrebuiltGmsCore/lib/x86_64:/product/priv-app/PrebuiltGmsCore/PrebuiltGmsCore.apk!/lib/x86_64, permitted_path=/data:/mnt/expand
+D/nativeloader( 2449): Configuring classloader-namespace for other apk /data/app/~~tsDRqpaf4bRfGdfHRBSv8w==/za.co.dipixel.remote-zVigpFgrR7JE483J0SOKMg==/base.apk. target_sdk_version=34, uses_libraries=, library_path=/data/app/~~tsDRqpaf4bRfGdfHRBSv8w==/za.co.dipixel.remote-zVigpFgrR7JE483J0SOKMg==/lib/x86_64:/data/app/~~tsDRqpaf4bRfGdfHRBSv8w==/za.co.dipixel.remote-zVigpFgrR7JE483J0SOKMg==/base.apk!/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/za.co.dipixel.remote
+V/GraphicsEnvironment( 2449): ANGLE Developer option for 'za.co.dipixel.remote' set to: 'default'
+V/GraphicsEnvironment( 2449): ANGLE GameManagerService for za.co.dipixel.remote: false
+I/DynamiteModule( 2536): Considering local module com.google.android.gms.googlecertificates:0 and remote module com.google.android.gms.googlecertificates:7
+I/DynamiteModule( 2536): Selected remote version of com.google.android.gms.googlecertificates, version >= 7
+D/nativeloader( 2592): Configuring classloader-namespace for other apk /system/framework/com.android.media.remotedisplay.jar. target_sdk_version=33, uses_libraries=ALL, library_path=/product/priv-app/PrebuiltGmsCore/lib/x86_64:/product/priv-app/PrebuiltGmsCore/PrebuiltGmsCore.apk!/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/com.google.android.gms
+W/.dipixel.remote( 2449): Method boolean androidx.compose.runtime.snapshots.SnapshotStateList.conditionalUpdate(boolean, kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+W/.dipixel.remote( 2449): Common causes for lock verification issues are non-optimized dex code
+W/.dipixel.remote( 2449): and incorrect proguard optimizations.
+W/.dipixel.remote( 2449): Method boolean androidx.compose.runtime.snapshots.SnapshotStateList.conditionalUpdate$default(androidx.compose.runtime.snapshots.SnapshotStateList, boolean, kotlin.jvm.functions.Function1, int, java.lang.Object) failed lock verification and will run slower.
+W/.dipixel.remote( 2449): Method java.lang.Object androidx.compose.runtime.snapshots.SnapshotStateList.mutate(kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+W/.dipixel.remote( 2449): Method void androidx.compose.runtime.snapshots.SnapshotStateList.update(boolean, kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+W/.dipixel.remote( 2449): Method void androidx.compose.runtime.snapshots.SnapshotStateList.update$default(androidx.compose.runtime.snapshots.SnapshotStateList, boolean, kotlin.jvm.functions.Function1, int, java.lang.Object) failed lock verification and will run slower.
+D/nativeloader( 1740): Configuring classloader-namespace for other apk /system/framework/com.android.media.remotedisplay.jar. target_sdk_version=33, uses_libraries=ALL, library_path=/product/priv-app/PrebuiltGmsCore/lib/x86_64:/product/priv-app/PrebuiltGmsCore/PrebuiltGmsCore.apk!/lib/x86_64, permitted_path=/data:/mnt/expand
+D/CoreBackPreview(  483): Window{2df67e9 u0 za.co.dipixel.remote/za.co.dipixel.remote.MainActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@971df0f, mPriority=0}
+D/CarrierSvcBindHelper(  982): onPackageAdded: za.co.dipixel.remote
+I/AppsFilter(  483): interaction: PackageSetting{6d5d5b7 za.co.dipixel.remote/10174} -> PackageSetting{2b3f124 com.google.android.as/10118} BLOCKED
+E/RemoteAugmentedAutofillService(  483): Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+I/AppsFilter(  483): interaction: PackageSetting{6d5d5b7 za.co.dipixel.remote/10174} -> PackageSetting{7d0fb90 com.google.android.youtube/10138} BLOCKED
+I/AppsFilter(  483): interaction: PackageSetting{6d5d5b7 za.co.dipixel.remote/10174} -> PackageSetting{2b3f124 com.google.android.as/10118} BLOCKED
+I/AppsFilter(  483): interaction: PackageSetting{6d5d5b7 za.co.dipixel.remote/10174} -> PackageSetting{8f33a43 com.google.android.gm/10144} BLOCKED
+I/AppsFilter(  483): interaction: PackageSetting{6d5d5b7 za.co.dipixel.remote/10174} -> PackageSetting{e2268c0 com.google.android.dialer/10110} BLOCKED
+I/AppsFilter(  483): interaction: PackageSetting{6d5d5b7 za.co.dipixel.remote/10174} -> PackageSetting{51149f9 com.google.android.contacts/10121} BLOCKED
+I/AppsFilter(  483): interaction: PackageSetting{6d5d5b7 za.co.dipixel.remote/10174} -> PackageSetting{c7c8d3e com.google.android.apps.youtube.music/10132} BLOCKED
+I/AppsFilter(  483): interaction: PackageSetting{6d5d5b7 za.co.dipixel.remote/10174} -> PackageSetting{5379f com.google.android.inputmethod.latin/10133} BLOCKED
+W/ProviderInstaller( 1740): Failed to load providerinstaller module: No acceptable module com.google.android.gms.providerinstaller.dynamite found. Local version is 0 and remote version is 0.
+I/ChimeraSrvcProxy( 1058): NullBinder for android.net.action.RECOMMEND_NETWORKS triggering remote TransactionTooLargeException due to Service without Chimera impl
+I/ChimeraSrvcProxy( 1058): NullBinder for android.net.action.RECOMMEND_NETWORKS triggering remote TransactionTooLargeException due to Service without Chimera impl
+I/ChimeraSrvcProxy( 1058): NullBinder for android.net.action.RECOMMEND_NETWORKS triggering remote TransactionTooLargeException due to Service without Chimera impl
+I/DynamiteModule( 1740): Considering local module com.google.android.gms.ads.dynamite:0 and remote module com.google.android.gms.ads.dynamite:231004600
+I/DynamiteModule( 1740): Selected remote version of com.google.android.gms.ads.dynamite, version >= 231004600
+W/ziparchive(  483): Unable to open '/data/app/~~tsDRqpaf4bRfGdfHRBSv8w==/za.co.dipixel.remote-zVigpFgrR7JE483J0SOKMg==/base.dm': No such file or directory
+W/InputManager-JNI(  483): Input channel object 'ef42476 Splash Screen za.co.dipixel.remote (client)' was disposed without first being removed with the input manager!
+I/ActivityTaskManager(  483): Displayed za.co.dipixel.remote/.MainActivity: +7s330ms
+W/BcSmartspaceView( 1015): Caused by: android.os.RemoteException: Remote stack trace:
+I/GoogleInputMethodService( 1492): GoogleInputMethodService.onStartInput():1877 onStartInput(EditorInfo{inputType=0x0(NULL) imeOptions=0x0 privateImeOptions=null actionName=UNSPECIFIED actionLabel=null actionId=0 initialSelStart=-1 initialSelEnd=-1 initialCapsMode=0x0 hintText=null label=null packageName=za.co.dipixel.remote fieldId=-1 fieldName=null extras=null}, false)
+I/Launcher.IconCache( 1015): Database bulk icon loading failed, using fallback bulk icon loading for: ComponentInfo{za.co.dipixel.remote/za.co.dipixel.remote.MainActivity}
+I/DynamiteModule( 2592): Considering local module com.google.android.gms.providerinstaller.dynamite:1 and remote module com.google.android.gms.providerinstaller.dynamite:0
+I/DynamiteModule( 2774): Considering local module com.google.android.gms.providerinstaller.dynamite:0 and remote module com.google.android.gms.providerinstaller.dynamite:0
+W/ProviderInstaller( 2774): Failed to load providerinstaller module: No acceptable module com.google.android.gms.providerinstaller.dynamite found. Local version is 0 and remote version is 0.
+D/nativeloader( 2774): Configuring classloader-namespace for other apk /system/framework/com.android.media.remotedisplay.jar. target_sdk_version=33, uses_libraries=ALL, library_path=/product/priv-app/PrebuiltGmsCore/lib/x86_64:/product/priv-app/PrebuiltGmsCore/PrebuiltGmsCore.apk!/lib/x86_64, permitted_path=/data:/mnt/expand
+W/ProviderInstaller( 2447): Failed to load providerinstaller module: No acceptable module com.google.android.gms.providerinstaller.dynamite found. Local version is 0 and remote version is 0.
+D/ProfileInstaller( 2449): Installing profile for za.co.dipixel.remote
+D/nativeloader( 2447): Configuring classloader-namespace for other apk /system/framework/com.android.media.remotedisplay.jar. target_sdk_version=33, uses_libraries=ALL, library_path=/product/priv-app/PrebuiltGmsCore/lib/x86_64:/product/priv-app/PrebuiltGmsCore/PrebuiltGmsCore.apk!/lib/x86_64, permitted_path=/data:/mnt/expand
+D/ImsResolver(  982): maybeAddedImsService, packageName: za.co.dipixel.remote
+I/ActivityManager(  483): Force stopping za.co.dipixel.remote appid=10174 user=0: from pid 3229
+I/ActivityManager(  483): Killing 2449:za.co.dipixel.remote/u0a174 (adj 0): stop za.co.dipixel.remote due to from pid 3229
+W/ActivityTaskManager(  483): Force removing ActivityRecord{ecaff8f u0 za.co.dipixel.remote/.MainActivity} t9 f}}: app died, no saved state
+W/WindowManager(  483): Exception thrown during dispatchAppVisibility Window{2df67e9 u0 za.co.dipixel.remote/za.co.dipixel.remote.MainActivity}
+W/InputManager-JNI(  483): Input channel object '2df67e9 za.co.dipixel.remote/za.co.dipixel.remote.MainActivity (client)' was disposed without first being removed with the input manager!
+V/ActivityManager(  483): Got obituary of 2449:za.co.dipixel.remote
+I/ActivityTaskManager(  483): START u0 {flg=0x10000000 cmp=za.co.dipixel.remote/.MainActivity} from uid 2000
+I/.dipixel.remote( 3271): Late-enabling -Xcheck:jni
+I/ActivityManager(  483): Start proc 3271:za.co.dipixel.remote/u0a174 for next-top-activity {za.co.dipixel.remote/za.co.dipixel.remote.MainActivity}
+D/CoreBackPreview(  483): Window{fc8c47c u0 Splash Screen za.co.dipixel.remote}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@5bc5d26, mPriority=0}
+I/.dipixel.remote( 3271): Using CollectorTypeCC GC.
+W/.dipixel.remote( 3271): Unexpected CPU variant for x86: x86_64.
+W/.dipixel.remote( 3271): Known variants: atom, sandybridge, silvermont, kabylake, default
+W/ziparchive( 3271): Unable to open '/data/app/~~tsDRqpaf4bRfGdfHRBSv8w==/za.co.dipixel.remote-zVigpFgrR7JE483J0SOKMg==/base.dm': No such file or directory
+W/ziparchive( 3271): Unable to open '/data/app/~~tsDRqpaf4bRfGdfHRBSv8w==/za.co.dipixel.remote-zVigpFgrR7JE483J0SOKMg==/base.dm': No such file or directory
+I/DynamiteModule( 1741): Considering local module com.google.android.gms.cronet_dynamite:0 and remote module com.google.android.gms.cronet_dynamite:2411
+I/DynamiteModule( 1741): Selected remote version of com.google.android.gms.cronet_dynamite, version >= 2411
+I/DynamiteModule( 1284): Considering local module com.google.android.gms.providerinstaller.dynamite:1 and remote module com.google.android.gms.providerinstaller.dynamite:0
+D/nativeloader( 3271): Configuring classloader-namespace for other apk /data/app/~~tsDRqpaf4bRfGdfHRBSv8w==/za.co.dipixel.remote-zVigpFgrR7JE483J0SOKMg==/base.apk. target_sdk_version=34, uses_libraries=, library_path=/data/app/~~tsDRqpaf4bRfGdfHRBSv8w==/za.co.dipixel.remote-zVigpFgrR7JE483J0SOKMg==/lib/x86_64:/data/app/~~tsDRqpaf4bRfGdfHRBSv8w==/za.co.dipixel.remote-zVigpFgrR7JE483J0SOKMg==/base.apk!/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/za.co.dipixel.remote
+V/GraphicsEnvironment( 3271): ANGLE Developer option for 'za.co.dipixel.remote' set to: 'default'
+V/GraphicsEnvironment( 3271): ANGLE GameManagerService for za.co.dipixel.remote: false
+W/.dipixel.remote( 3271): Method boolean androidx.compose.runtime.snapshots.SnapshotStateList.conditionalUpdate(boolean, kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+W/.dipixel.remote( 3271): Common causes for lock verification issues are non-optimized dex code
+W/.dipixel.remote( 3271): and incorrect proguard optimizations.
+W/.dipixel.remote( 3271): Method boolean androidx.compose.runtime.snapshots.SnapshotStateList.conditionalUpdate$default(androidx.compose.runtime.snapshots.SnapshotStateList, boolean, kotlin.jvm.functions.Function1, int, java.lang.Object) failed lock verification and will run slower.
+W/.dipixel.remote( 3271): Method java.lang.Object androidx.compose.runtime.snapshots.SnapshotStateList.mutate(kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+W/.dipixel.remote( 3271): Method void androidx.compose.runtime.snapshots.SnapshotStateList.update(boolean, kotlin.jvm.functions.Function1) failed lock verification and will run slower.
+W/.dipixel.remote( 3271): Method void androidx.compose.runtime.snapshots.SnapshotStateList.update$default(androidx.compose.runtime.snapshots.SnapshotStateList, boolean, kotlin.jvm.functions.Function1, int, java.lang.Object) failed lock verification and will run slower.
+D/CoreBackPreview(  483): Window{7b504cc u0 za.co.dipixel.remote/za.co.dipixel.remote.MainActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@2bd2164, mPriority=0}
+D/ContentCapturePerUserService(  483): updateRemoteService(): destroying old remote service
+D/ContentCapturePerUserService(  483): updateRemoteService(): creating new remote service for ComponentInfo{com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiContentCaptureService}
+I/DynamiteModule( 1284): Considering local module com.google.android.gms.providerinstaller.dynamite:1 and remote module com.google.android.gms.providerinstaller.dynamite:0
+I/DynamiteModule( 1284): Considering local module com.google.android.gms.providerinstaller.dynamite:1 and remote module com.google.android.gms.providerinstaller.dynamite:0
+I/DynamiteModule( 2592): Considering local module com.google.android.gms.cronet_dynamite:0 and remote module com.google.android.gms.cronet_dynamite:2411
+I/DynamiteModule( 2592): Selected remote version of com.google.android.gms.cronet_dynamite, version >= 2411
+I/DynamiteModule( 1284): Considering local module com.google.android.gms.providerinstaller.dynamite:1 and remote module com.google.android.gms.providerinstaller.dynamite:0
+I/DynamiteModule( 1284): Considering local module com.google.android.gms.providerinstaller.dynamite:1 and remote module com.google.android.gms.providerinstaller.dynamite:0
+W/BcSmartspaceView( 1015): Caused by: android.os.RemoteException: Remote stack trace:
+I/AppsFilter(  483): interaction: PackageSetting{a2b9ec3 za.co.dipixel.remote/10174} -> PackageSetting{cc43340 com.google.android.gm/10144} BLOCKED
+I/AppsFilter(  483): interaction: PackageSetting{a2b9ec3 za.co.dipixel.remote/10174} -> PackageSetting{aa78279 com.google.android.partnersetup/10105} BLOCKED
+I/DynamiteModule( 1284): Considering local module com.google.android.gms.providerinstaller.dynamite:1 and remote module com.google.android.gms.providerinstaller.dynamite:0
+I/DynamiteModule( 1284): Considering local module com.google.android.gms.providerinstaller.dynamite:1 and remote module com.google.android.gms.providerinstaller.dynamite:0
+I/DynamiteModule( 1284): Considering local module com.google.android.gms.providerinstaller.dynamite:1 and remote module com.google.android.gms.providerinstaller.dynamite:0
+I/DynamiteModule( 1058): Considering local module com.google.android.gms.providerinstaller.dynamite:1 and remote module com.google.android.gms.providerinstaller.dynamite:0
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: postUpdateRcsAvailability, hint: SINGLE_REGISTRATION_CAPABILITY_UPDATE
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailability, hint: SINGLE_REGISTRATION_CAPABILITY_UPDATE
+W/ziparchive(  483): Unable to open '/data/app/~~tsDRqpaf4bRfGdfHRBSv8w==/za.co.dipixel.remote-zVigpFgrR7JE483J0SOKMg==/base.dm': No such file or directory
+I/ActivityTaskManager(  483): Displayed za.co.dipixel.remote/.MainActivity: +4s488ms
+W/InputManager-JNI(  483): Input channel object 'fc8c47c Splash Screen za.co.dipixel.remote (client)' was disposed without first being removed with the input manager!
+D/CoreBackPreview(  483): Window{fc8c47c u0 Splash Screen za.co.dipixel.remote EXITING}: Setting back callback null
+I/DynamiteModule( 3039): Considering local module com.google.android.gms.providerinstaller.dynamite:0 and remote module com.google.android.gms.providerinstaller.dynamite:0
+W/ProviderInstaller( 3039): Failed to load providerinstaller module: No acceptable module com.google.android.gms.providerinstaller.dynamite found. Local version is 0 and remote version is 0.
+I/GoogleInputMethodService( 1492): GoogleInputMethodService.onStartInput():1877 onStartInput(EditorInfo{inputType=0x0(NULL) imeOptions=0x0 privateImeOptions=null actionName=UNSPECIFIED actionLabel=null actionId=0 initialSelStart=-1 initialSelEnd=-1 initialCapsMode=0x0 hintText=null label=null packageName=za.co.dipixel.remote fieldId=-1 fieldName=null extras=null}, false)
+D/nativeloader( 3039): Configuring classloader-namespace for other apk /system/framework/com.android.media.remotedisplay.jar. target_sdk_version=33, uses_libraries=ALL, library_path=/product/priv-app/PrebuiltGmsCore/lib/x86_64:/product/priv-app/PrebuiltGmsCore/PrebuiltGmsCore.apk!/lib/x86_64, permitted_path=/data:/mnt/expand
+D/CarrierSvcBindHelper(  982): onHandleForceStop: [za.co.dipixel.remote]
+W/BcSmartspaceView( 1015): Caused by: android.os.RemoteException: Remote stack trace:
+I/RemoteVvmTaskManager(  982): Binding to ComponentInfo{com.google.android.dialer/com.android.voicemail.impl.DialerVisualVoicemailService}
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: postUpdateRcsAvailability, hint: NO_HINT
+W/ProviderInstaller( 2447): Failed to load providerinstaller module: No acceptable module com.google.android.gms.providerinstaller.dynamite found. Local version is 0 and remote version is 0.
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: postUpdateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailability, hint: NO_HINT
+D/ProfileInstaller( 3271): Installing profile for za.co.dipixel.remote
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: postUpdateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: postUpdateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: postUpdateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailability, hint: NO_HINT
+E/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: Get JibeServiceException while query signup service api
+E/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: Get JibeServiceException while query signup service api
+E/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: Get JibeServiceException while query signup service api
+I/Launcher.IconCache( 1015): Database bulk icon loading failed, using fallback bulk icon loading for: ComponentInfo{za.co.dipixel.remote/za.co.dipixel.remote.MainActivity}
+I/ActivityManager(  483): Start proc 3597:com.android.remoteprovisioner/u0a151 for service {com.android.remoteprovisioner/com.android.remoteprovisioner.service.GenerateRkpKeyService}
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailability, hint: NO_HINT
+E/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: Get JibeServiceException while query signup service api
+E/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: Get JibeServiceException while query signup service api
+E/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: Get JibeServiceException while query signup service api
+D/nativeloader( 3597): Configuring classloader-namespace-shared for other apk /system_ext/priv-app/RemoteProvisioner/RemoteProvisioner.apk. target_sdk_version=33, uses_libraries=, library_path=/system_ext/priv-app/RemoteProvisioner/lib/x86_64:/system/lib64:/system_ext/lib64, permitted_path=/data:/mnt/expand:/data/user/0/com.android.remoteprovisioner:/system_ext/priv-app/RemoteProvisioner:/system/lib64:/system_ext/lib64
+V/GraphicsEnvironment( 3597): ANGLE Developer option for 'com.android.remoteprovisioner' set to: 'default'
+V/GraphicsEnvironment( 3597): ANGLE GameManagerService for com.android.remoteprovisioner: false
+I/RemoteProvisioningService( 3597): Notify key generated ping for secLevel: 1
+I/RemoteProvisioner( 3597): Pool status 0, 0, 0, 0
+I/RemoteProvisioningService( 3597): Pool status.
+I/RemoteProvisioningService( 3597): Total: 0
+I/RemoteProvisioningService( 3597): Attested: 0
+I/RemoteProvisioningService( 3597): Unassigned: 0
+I/RemoteProvisioningService( 3597): Expiring: 0
+I/RemoteProvisioningService( 3597): Need to generate 6 keys.
+I/RemoteProvisioningService( 3597): Generated 6 keys. 0 keys were also available for signing previous to generation.
+I/RemoteProvisioningService( 3597): All signed keys are currently in use, provisioning more.
+I/RemoteProvisioningService( 3597): Requesting 6 keys to be provisioned.
+I/RemoteProvisioningService( 3597): Request for 6 keys to be provisioned.
+I/RemoteProvisioner( 3597): Packaging 6 keys into a CSR. Test: false
+I/RemoteProvisioningService( 3597): Received 6 certificate chains from the server.
+I/RemoteProvisioningService( 3597): In provisionCerts: Requested 6 keys. 6 were provisioned.
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: postUpdateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: postUpdateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: postUpdateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: postUpdateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailability, hint: NO_HINT
+I/DynamiteModule( 1284): Considering local module com.google.android.gms.providerinstaller.dynamite:1 and remote module com.google.android.gms.providerinstaller.dynamite:0
+I/DynamiteModule( 1284): Considering local module com.google.android.gms.providerinstaller.dynamite:1 and remote module com.google.android.gms.providerinstaller.dynamite:0
+I/DynamiteModule( 1284): Considering local module com.google.android.gms.providerinstaller.dynamite:1 and remote module com.google.android.gms.providerinstaller.dynamite:0
+I/DynamiteModule( 1284): Considering local module com.google.android.gms.providerinstaller.dynamite:1 and remote module com.google.android.gms.providerinstaller.dynamite:0
+I/DynamiteModule( 1284): Considering local module com.google.android.gms.providerinstaller.dynamite:1 and remote module com.google.android.gms.providerinstaller.dynamite:0
+I/AppsFilter(  483): interaction: PackageSetting{a2b9ec3 za.co.dipixel.remote/10174} -> PackageSetting{a8d8b61 com.google.android.apps.messaging/10112} BLOCKED
+I/AppsFilter(  483): interaction: PackageSetting{a2b9ec3 za.co.dipixel.remote/10174} -> PackageSetting{cc21686 com.google.android.gm/10144} BLOCKED
+I/AppsFilter(  483): interaction: PackageSetting{a2b9ec3 za.co.dipixel.remote/10174} -> PackageSetting{3249b47 com.android.remoteprovisioner/10151} BLOCKED
+I/AppsFilter(  483): interaction: PackageSetting{a2b9ec3 za.co.dipixel.remote/10174} -> PackageSetting{dcfef74 com.google.android.cellbroadcastreceiver/10158} BLOCKED
+I/RemoteVvmTaskManager(  982): Binding to ComponentInfo{com.google.android.dialer/com.android.voicemail.impl.DialerVisualVoicemailService}
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailabilityPostProcess, Get Updated RcsAvailability, RcsAvailability: BUGLE_LOADING_AVAILABILITY_IN_PROGRESS, SimId: redacted-pii[0-chars]
+I/DynamiteModule( 1284): Considering local module com.google.android.gms.providerinstaller.dynamite:1 and remote module com.google.android.gms.providerinstaller.dynamite:0
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailabilityPostProcess, Get Updated RcsAvailability, RcsAvailability: BUGLE_LOADING_AVAILABILITY_IN_PROGRESS, SimId: redacted-pii[0-chars]
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailabilityPostProcess, Get Updated RcsAvailability, RcsAvailability: BUGLE_LOADING_AVAILABILITY_IN_PROGRESS, SimId: redacted-pii[0-chars]
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailabilityPostProcess, Get Updated RcsAvailability, RcsAvailability: BUGLE_LOADING_AVAILABILITY_IN_PROGRESS, SimId: redacted-pii[0-chars]
+D/MediaPlayerList(  954): Name of package changed: com.android.remoteprovisioner
+D/MediaPlayerList(  954): Name of package changed: com.android.remoteprovisioner
+D/CarrierSvcBindHelper(  982): onPackageModified: com.android.remoteprovisioner
+D/ImsResolver(  982): maybeAddedImsService, packageName: com.android.remoteprovisioner
+I/DynamiteModule( 1284): Considering local module com.google.android.gms.providerinstaller.dynamite:1 and remote module com.google.android.gms.providerinstaller.dynamite:0
+I/RemoteProvisioningService( 3597): Notify key generated ping for secLevel: 1
+I/RemoteProvisioner( 3597): Pool status 6, 5, 0, 6
+I/RemoteProvisioningService( 3597): Pool status.
+I/RemoteProvisioningService( 3597): Total: 6
+I/RemoteProvisioningService( 3597): Attested: 6
+I/RemoteProvisioningService( 3597): Unassigned: 5
+I/RemoteProvisioningService( 3597): Expiring: 0
+I/RemoteProvisioningService.KeyPoolStats( 3597): Sufficient keys are available, no CSR needed.
+I/RemoteProvisioningService( 3597): No provisioning needed.
+I/DynamiteModule( 1284): Considering local module com.google.android.gms.providerinstaller.dynamite:1 and remote module com.google.android.gms.providerinstaller.dynamite:0
+I/DynamiteModule( 1284): Considering local module com.google.android.gms.providerinstaller.dynamite:1 and remote module com.google.android.gms.providerinstaller.dynamite:0
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: postUpdateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: postUpdateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: postUpdateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailability, hint: NO_HINT
+E/dlpn    ( 1058): 	at com.google.android.gms.auth.proximity.RemoteDevice.a(:com.google.android.gms@231818047@23.18.18 (190800-535401451):0)
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: postUpdateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: postUpdateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailabilityPostProcess, Get Updated RcsAvailability, RcsAvailability: BUGLE_LOADING_AVAILABILITY_IN_PROGRESS, SimId: redacted-pii[0-chars]
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: postUpdateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailabilityPostProcess, Get Updated RcsAvailability, RcsAvailability: BUGLE_LOADING_AVAILABILITY_IN_PROGRESS, SimId: redacted-pii[0-chars]
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: postUpdateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailabilityPostProcess, Get Updated RcsAvailability, RcsAvailability: BUGLE_LOADING_AVAILABILITY_IN_PROGRESS, SimId: redacted-pii[0-chars]
+I/RemoteProvisioningService( 3597): Notify key generated ping for secLevel: 1
+I/RemoteProvisioner( 3597): Pool status 6, 5, 0, 6
+I/RemoteProvisioningService( 3597): Pool status.
+I/RemoteProvisioningService( 3597): Total: 6
+I/RemoteProvisioningService( 3597): Attested: 6
+I/RemoteProvisioningService( 3597): Unassigned: 5
+I/RemoteProvisioningService( 3597): Expiring: 0
+I/RemoteProvisioningService.KeyPoolStats( 3597): Sufficient keys are available, no CSR needed.
+I/RemoteProvisioningService( 3597): No provisioning needed.
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: postUpdateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: postUpdateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: postUpdateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: postUpdateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailabilityPostProcess, Get Updated RcsAvailability, RcsAvailability: BUGLE_LOADING_AVAILABILITY_IN_PROGRESS, SimId: redacted-pii[0-chars]
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: postUpdateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: postUpdateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailabilityPostProcess, Get Updated RcsAvailability, RcsAvailability: BUGLE_LOADING_AVAILABILITY_IN_PROGRESS, SimId: redacted-pii[0-chars]
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailabilityPostProcess, Get Updated RcsAvailability, RcsAvailability: BUGLE_LOADING_AVAILABILITY_IN_PROGRESS, SimId: redacted-pii[0-chars]
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailabilityPostProcess, Get Updated RcsAvailability, RcsAvailability: BUGLE_LOADING_AVAILABILITY_IN_PROGRESS, SimId: redacted-pii[0-chars]
+I/RemoteProvisioningService( 3597): Notify key generated ping for secLevel: 1
+I/RemoteProvisioner( 3597): Pool status 6, 5, 0, 6
+I/RemoteProvisioningService( 3597): Pool status.
+I/RemoteProvisioningService( 3597): Total: 6
+I/RemoteProvisioningService( 3597): Attested: 6
+I/RemoteProvisioningService( 3597): Unassigned: 5
+I/RemoteProvisioningService( 3597): Expiring: 0
+I/RemoteProvisioningService.KeyPoolStats( 3597): Sufficient keys are available, no CSR needed.
+I/RemoteProvisioningService( 3597): No provisioning needed.
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailabilityPostProcess, Get Updated RcsAvailability, RcsAvailability: BUGLE_LOADING_AVAILABILITY_IN_PROGRESS, SimId: redacted-pii[0-chars]
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailabilityPostProcess, Get Updated RcsAvailability, RcsAvailability: BUGLE_LOADING_AVAILABILITY_IN_PROGRESS, SimId: redacted-pii[0-chars]
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailabilityPostProcess, Get Updated RcsAvailability, RcsAvailability: BUGLE_LOADING_AVAILABILITY_IN_PROGRESS, SimId: redacted-pii[0-chars]
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: postUpdateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailabilityPostProcess, Get Updated RcsAvailability, RcsAvailability: BUGLE_LOADING_AVAILABILITY_IN_PROGRESS, SimId: redacted-pii[0-chars]
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: postUpdateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailability, hint: NO_HINT
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailabilityPostProcess, Get Updated RcsAvailability, RcsAvailability: BUGLE_LOADING_AVAILABILITY_IN_PROGRESS, SimId: redacted-pii[0-chars]
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailabilityPostProcess, Get Updated RcsAvailability, RcsAvailability: BUGLE_LOADING_AVAILABILITY_IN_PROGRESS, SimId: redacted-pii[0-chars]
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailabilityPostProcess, Get Updated RcsAvailability, RcsAvailability: DISABLED_VIA_GSERVICES, SimId: redacted-pii[20-chars]
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailabilityPostProcess, Get Updated RcsAvailability, RcsAvailability: DISABLED_VIA_GSERVICES, SimId: redacted-pii[20-chars]
+I/BlockstoreStorage( 1284): Clearing Blockstore Data for package za.co.dipixel.remote [CONTEXT service_id=258 ]
+I/FontLog ( 1058): Package za.co.dipixel.remote has no metadata [CONTEXT service_id=132 ]
+I/RemoteProvisioningService( 3597): Notify key generated ping for secLevel: 1
+I/RemoteProvisioner( 3597): Pool status 6, 5, 0, 6
+I/RemoteProvisioningService( 3597): Pool status.
+I/RemoteProvisioningService( 3597): Total: 6
+I/RemoteProvisioningService( 3597): Attested: 6
+I/RemoteProvisioningService( 3597): Unassigned: 5
+I/RemoteProvisioningService( 3597): Expiring: 0
+I/RemoteProvisioningService.KeyPoolStats( 3597): Sufficient keys are available, no CSR needed.
+I/RemoteProvisioningService( 3597): No provisioning needed.
+I/DynamiteModule( 2592): Considering local module com.google.android.gms.googlecertificates:7 and remote module com.google.android.gms.googlecertificates:7
+I/RemoteProvisioningService( 3597): Notify key generated ping for secLevel: 1
+I/RemoteProvisioner( 3597): Pool status 6, 5, 0, 6
+I/RemoteProvisioningService( 3597): Pool status.
+I/RemoteProvisioningService( 3597): Total: 6
+I/RemoteProvisioningService( 3597): Attested: 6
+I/RemoteProvisioningService( 3597): Unassigned: 5
+I/RemoteProvisioningService( 3597): Expiring: 0
+I/RemoteProvisioningService.KeyPoolStats( 3597): Sufficient keys are available, no CSR needed.
+I/RemoteProvisioningService( 3597): No provisioning needed.
+I/RemoteProvisioningService( 3597): Notify key generated ping for secLevel: 1
+I/RemoteProvisioner( 3597): Pool status 6, 5, 0, 6
+I/RemoteProvisioningService( 3597): Pool status.
+I/RemoteProvisioningService( 3597): Total: 6
+I/RemoteProvisioningService( 3597): Attested: 6
+I/RemoteProvisioningService( 3597): Unassigned: 5
+I/RemoteProvisioningService( 3597): Expiring: 0
+I/RemoteProvisioningService.KeyPoolStats( 3597): Sufficient keys are available, no CSR needed.
+I/RemoteProvisioningService( 3597): No provisioning needed.
+W/ProviderInstaller( 4163): Failed to load providerinstaller module: No acceptable module com.google.android.gms.providerinstaller.dynamite found. Local version is 0 and remote version is 0.
+D/nativeloader( 4163): Configuring classloader-namespace for other apk /system/framework/com.android.media.remotedisplay.jar. target_sdk_version=33, uses_libraries=ALL, library_path=/product/priv-app/PrebuiltGmsCore/lib/x86_64:/product/priv-app/PrebuiltGmsCore/PrebuiltGmsCore.apk!/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/com.google.android.gms
+I/DynamiteModule( 3039): Considering local module com.google.android.gms.cronet_dynamite:0 and remote module com.google.android.gms.cronet_dynamite:2411
+I/DynamiteModule( 3039): Selected remote version of com.google.android.gms.cronet_dynamite, version >= 2411
+I/RemoteProvisioningService( 3597): Notify key generated ping for secLevel: 1
+I/RemoteProvisioner( 3597): Pool status 6, 5, 0, 6
+I/RemoteProvisioningService( 3597): Pool status.
+I/RemoteProvisioningService( 3597): Total: 6
+I/RemoteProvisioningService( 3597): Attested: 6
+I/RemoteProvisioningService( 3597): Unassigned: 5
+I/RemoteProvisioningService( 3597): Expiring: 0
+I/RemoteProvisioningService.KeyPoolStats( 3597): Sufficient keys are available, no CSR needed.
+I/RemoteProvisioningService( 3597): No provisioning needed.
+W/err     ( 4163): Caused by: android.os.RemoteException: Remote stack trace:
+W/err     ( 4163): Caused by: android.os.RemoteException: Remote stack trace:
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: postUpdateRcsAvailability, hint: GSERVICE_UPDATE
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailability, hint: GSERVICE_UPDATE
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailabilityPostProcess, Get Updated RcsAvailability, RcsAvailability: DISABLED_VIA_GSERVICES, SimId: redacted-pii[20-chars]
+I/RemoteProvisioningService( 3597): Notify key generated ping for secLevel: 1
+I/RemoteProvisioner( 3597): Pool status 6, 5, 0, 6
+I/RemoteProvisioningService( 3597): Pool status.
+I/RemoteProvisioningService( 3597): Total: 6
+I/RemoteProvisioningService( 3597): Attested: 6
+I/RemoteProvisioningService( 3597): Unassigned: 5
+I/RemoteProvisioningService( 3597): Expiring: 0
+I/RemoteProvisioningService.KeyPoolStats( 3597): Sufficient keys are available, no CSR needed.
+I/RemoteProvisioningService( 3597): No provisioning needed.
+I/RemoteProvisioningService( 3597): Notify key generated ping for secLevel: 1
+I/RemoteProvisioner( 3597): Pool status 6, 5, 0, 6
+I/RemoteProvisioningService( 3597): Pool status.
+I/RemoteProvisioningService( 3597): Total: 6
+I/RemoteProvisioningService( 3597): Attested: 6
+I/RemoteProvisioningService( 3597): Unassigned: 5
+I/RemoteProvisioningService( 3597): Expiring: 0
+I/RemoteProvisioningService.KeyPoolStats( 3597): Sufficient keys are available, no CSR needed.
+I/RemoteProvisioningService( 3597): No provisioning needed.
+I/AppsFilter(  483): interaction: PackageSetting{a2b9ec3 za.co.dipixel.remote/10174} -> PackageSetting{c9fb313 com.google.android.apps.messaging/10112} BLOCKED
+I/AppsFilter(  483): interaction: PackageSetting{a2b9ec3 za.co.dipixel.remote/10174} -> PackageSetting{c413950 com.android.camera2/10143} BLOCKED
+I/AppsFilter(  483): interaction: PackageSetting{a2b9ec3 za.co.dipixel.remote/10174} -> PackageSetting{b1bf749 com.google.android.apps.docs/10123} BLOCKED
+I/AppsFilter(  483): interaction: PackageSetting{a2b9ec3 za.co.dipixel.remote/10174} -> PackageSetting{66c5827 com.google.android.calendar/10122} BLOCKED
+I/AppsFilter(  483): interaction: PackageSetting{a2b9ec3 za.co.dipixel.remote/10174} -> PackageSetting{bb6b84e com.google.android.settings.intelligence/10107} BLOCKED
+W/ProviderInstaller( 4163): Failed to load providerinstaller module: No acceptable module com.google.android.gms.providerinstaller.dynamite found. Local version is 0 and remote version is 0.
+I/RemoteProvisioningBootReceiver( 3597): Caught boot intent, waking up.
+I/RemoteProvisionerSettings( 3597): Setting ID
+D/ConnectivityService(  483): requestNetwork for uid/pid:10151/3597 activeRequest: null callbackRequest: 109 [NetworkRequest [ REQUEST id=110, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10151 RequestorUid: 10151 RequestorPkg: com.android.remoteprovisioner UnderlyingNetworks: Null] ]] callback flags: 0 order: 2147483647
+D/WifiNetworkFactory(  483): got request NetworkRequest [ REQUEST id=110, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10151 RequestorUid: 10151 RequestorPkg: com.android.remoteprovisioner UnderlyingNetworks: Null] ]
+D/UntrustedWifiNetworkFactory(  483): got request NetworkRequest [ REQUEST id=110, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10151 RequestorUid: 10151 RequestorPkg: com.android.remoteprovisioner UnderlyingNetworks: Null] ]
+D/OemPaidWifiNetworkFactory(  483): got request NetworkRequest [ REQUEST id=110, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10151 RequestorUid: 10151 RequestorPkg: com.android.remoteprovisioner UnderlyingNetworks: Null] ]
+D/MultiInternetWifiNetworkFactory(  483): got request NetworkRequest [ REQUEST id=110, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10151 RequestorUid: 10151 RequestorPkg: com.android.remoteprovisioner UnderlyingNetworks: Null] ]
+I/WVCdm-DrmFactory(  303): [nullptr][com.android.remoteprovisioner] calling virtual ::ndk::ScopedAStatus wvdrm::hardware::drm::widevine::WVDrmFactory::createDrmPlugin(const aidl::android::hardware::drm::Uuid &, const std::string &, std::shared_ptr< ::aidl::android::hardware::drm::IDrmPlugin> *)
+I/RemoteProvisioningWV( 3597): Not a WV provisioning 4.0 device. No provisioning required.
+I/RemoteProvisioningService( 3597): Waking up; checking provisioning state.
+I/RemoteProvisioner( 3597): Pool status 6, 5, 0, 6
+I/RemoteProvisioningService( 3597): Pool status.
+I/RemoteProvisioningService( 3597): Total: 6
+I/RemoteProvisioningService( 3597): Attested: 6
+I/RemoteProvisioningService( 3597): Unassigned: 5
+I/RemoteProvisioningService( 3597): Expiring: 0
+I/RemoteProvisioningService.KeyPoolStats( 3597): Sufficient keys are available, no CSR needed.
+I/RemoteProvisioningService( 3597): No provisioning needed.
+I/WM-WorkerWrapper( 3597): Worker result SUCCESS for Work [ id=c4079ae0-0005-44df-97b0-253ff5bc943a, tags={ com.android.remoteprovisioner.PeriodicProvisioner } ]
+I/RemoteVvmTaskManager(  982): Binding to ComponentInfo{com.google.android.dialer/com.android.voicemail.impl.DialerVisualVoicemailService}
+I/AppsFilter(  483): interaction: PackageSetting{a2b9ec3 za.co.dipixel.remote/10174} -> PackageSetting{1adb578 com.android.remoteprovisioner/10151} BLOCKED
+D/MediaPlayerList(  954): Name of package changed: com.android.remoteprovisioner
+D/MediaPlayerList(  954): Name of package changed: com.android.remoteprovisioner
+I/DynamiteModule( 1284): Considering local module com.google.android.gms.flags:3 and remote module com.google.android.gms.flags:3
+D/CarrierSvcBindHelper(  982): onPackageModified: com.android.remoteprovisioner
+D/ImsResolver(  982): maybeAddedImsService, packageName: com.android.remoteprovisioner
+I/AppsFilter(  483): interaction: PackageSetting{a2b9ec3 za.co.dipixel.remote/10174} -> PackageSetting{936f65c com.google.android.youtube/10138} BLOCKED
+I/AppsFilter(  483): interaction: PackageSetting{a2b9ec3 za.co.dipixel.remote/10174} -> PackageSetting{2370d0 com.google.android.apps.maps/10140} BLOCKED
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: postUpdateRcsAvailability, hint: GSERVICE_UPDATE
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailability, hint: GSERVICE_UPDATE
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailabilityPostProcess, Get Updated RcsAvailability, RcsAvailability: DISABLED_VIA_GSERVICES, SimId: redacted-pii[20-chars]
+I/AppsFilter(  483): interaction: PackageSetting{a2b9ec3 za.co.dipixel.remote/10174} -> PackageSetting{b64362c com.google.android.apps.messaging/10112} BLOCKED
+I/AppsFilter(  483): interaction: PackageSetting{a2b9ec3 za.co.dipixel.remote/10174} -> PackageSetting{b7e2dc6 com.google.android.apps.maps/10140} BLOCKED
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: postUpdateRcsAvailability, hint: BOOT_COMPLETE
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailability, hint: BOOT_COMPLETE
+I/BugleRcs( 3039): RcsAvailabilityUpdaterRemote: updateRcsAvailabilityPostProcess, Get Updated RcsAvailability, RcsAvailability: DISABLED_VIA_GSERVICES, SimId: redacted-pii[20-chars]
+I/AppsFilter(  483): interaction: PackageSetting{a2b9ec3 za.co.dipixel.remote/10174} -> PackageSetting{b98ddd6 com.google.android.apps.photos/10139} BLOCKED
