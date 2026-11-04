@@ -96,6 +96,7 @@ When they say yes, play it, put it on, or similar, call play_title for that titl
 Songs, artists, albums and playlists: ALWAYS play_music first (Spotify). Only use play_youtube for music if play_music fails or they ask for YouTube or a music video.
 Kids videos and clips: play_youtube (kids=true for the Kids profile or children's content).
 "Play <film or series>" (or "put on", "watch"): call find_title, then straight away play_title with the best match on a service they have. Do not ask first when they already said play. Never ask which app; you decide from where it streams.
+The streaming guide behind find_title does not list DStv. If a film or series isn't on their other services and they have DStv, say you'll look on DStv and call play_title (it searches inside the DStv app). "Play X on DStv" always goes to play_title with service DStv.
 If you are not sure whether "play X" is a song or a show, call find_title; if nothing closely matches the name, treat it as a song and use play_music.
 When something starts, just say it is playing in a few words. Never say you can only open the app, never list ways to open it.
 TV commands: tv_control. Opening an app: open_app. "What's on" or "what am I watching": whats_on.
@@ -202,6 +203,7 @@ TV commands: tv_control. Opening an app: open_app. "What's on" or "what am I wat
             s.last = list
             list.take(3).forEach { cards.put(card(context, it)) }
             JSONObject().put("results", JSONArray().apply { list.forEach { put(describe(context, it)) } })
+                .put("dstv_not_listed_but_available", dstvApp(context) != null)
         }
         "play_title" -> playTitle(context, s, a.optString("title"), a.optInt("year", 0), a.optString("service"))
         "play_youtube" -> {
@@ -286,19 +288,37 @@ TV commands: tv_control. Opening an app: open_app. "What's on" or "what am I wat
             .put("on", d.getJSONArray("on_your_services")).put("elsewhere", d.getJSONArray("streaming_elsewhere"))
     }
 
+    /** DStv isn't in the streaming guide, so DStv is searched inside its own app. */
+    private fun dstvApp(context: Context): TvApp? =
+        if (subscriptions(context).any { norm(it).contains("dstv") }) serviceApp(context, "DStv") else null
+
+    private fun playOnDstv(context: Context, app: TvApp, title: String, poster: String = "", about: String = ""): JSONObject {
+        if (!Voice.start(context, launchIntent(context, app.packageName))) return JSONObject().put("ok", false).put("error", "Couldn't open DStv")
+        Autoplay.searchAndPlay(context, app.packageName, title)
+        Watching.record(context, title, app.packageName, "", Show(title, app.packageName, app.label, "", poster = poster, summary = about))
+        return JSONObject().put("ok", true).put("title", title).put("playing_on", app.label).put("note", "searching DStv for it and pressing play")
+    }
+
     private fun playTitle(context: Context, s: Session, title: String, year: Int, prefer: String): JSONObject {
+        val dstv = dstvApp(context)
+        val wantsDstv = norm(prefer).contains("dstv")
+        if (wantsDstv && dstv != null) return playOnDstv(context, dstv, title)
         val pool = s.last.ifEmpty { JustWatch.search(title) }
         val t = pool.firstOrNull { it.title.equals(title, true) && (year == 0 || it.year == year) }
             ?: pool.firstOrNull { it.title.contains(title, true) || title.contains(it.title, true) }
             ?: JustWatch.search(title).firstOrNull()
-            ?: return JSONObject().put("ok", false).put("error", "Couldn't find $title")
+            ?: return if (dstv != null) playOnDstv(context, dstv, title) else JSONObject().put("ok", false).put("error", "Couldn't find $title")
         val options = (t.streaming.filter { subscribed(context, it) } + t.streaming.filterNot { subscribed(context, it) })
             .mapNotNull { o -> serviceApp(context, o.service)?.let { o to it } }.distinctBy { it.second.packageName }
         val pick = options.firstOrNull { prefer.isNotBlank() && norm(it.first.service).contains(norm(prefer)) } ?: options.firstOrNull()
-            ?: return JSONObject().put("ok", false).put("error",
+        if (pick == null) {
+            // not on anything the guide knows: DStv may well have it (HBO, M-Net, local shows)
+            if (dstv != null) return playOnDstv(context, dstv, t.title, t.poster, t.description)
+            return JSONObject().put("ok", false).put("error",
                     t.streaming.firstOrNull { subscribed(context, it) }?.let { "${t.title} is on ${it.service}, but that app isn't installed on the TV" }
                         ?: "${t.title} isn't on your services")
                 .put("streaming_elsewhere", JSONArray(t.streaming.map { it.service })).put("rent_or_buy", JSONArray(t.rentBuy.map { it.service }))
+        }
         val (offer, app) = pick
         val ok = launch(context, offer, app, t.title)
         if (ok) Watching.record(context, t.title, app.packageName, offer.url,
@@ -371,11 +391,16 @@ TV commands: tv_control. Opening an app: open_app. "What's on" or "what am I wat
             val text = when {
                 mine.length() > 0 -> "I found $name. It's on ${mine.getString(0)}. Want me to play it?"
                 noApp.length() > 0 -> "$name is on ${noApp.getString(0)}, but the ${noApp.getString(0)} app isn't installed on the TV."
+                dstvApp(context) != null && mine.length() == 0 -> "$name isn't on your other services, but DStv might have it. Want me to look on DStv?"
                 elsewhere.length() > 0 -> "$name is streaming on ${elsewhere.getString(0)}, which you don't have."
                 rent.length() > 0 -> "$name isn't on ${subscriptions(context).filterNot { Watching.isMusic(it) }.joinToString(" or ")} yet. You can rent or buy it on ${rent.getString(0)}."
                 else -> "I found $name, but it isn't available to stream in South Africa yet."
             }
             return Reply(text, cards)
+        }
+        Regex("^(?:play|put on|watch|find) (.+?) on (?:dstv|d stv|dstv stream)$").find(t)?.let { m ->
+            val d = dstvApp(context) ?: return Reply("DStv isn't set up as one of your apps.", cards)
+            playOnDstv(context, d, m.groupValues[1].replaceFirstChar { it.uppercase() }); return Reply("Looking for ${m.groupValues[1]} on DStv.", cards)
         }
         // "play staying alive" / "play the big bang theory": a show if the name matches one, otherwise a song
         Regex("^(?:play|put on|watch|listen to) (.+?)(?: please)?$").find(t)?.let { m ->
