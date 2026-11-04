@@ -399,7 +399,7 @@ TV commands: tv_control. Opening an app: open_app. "What's on" or "what am I wat
             return Reply(text, cards)
         }
         Regex("^(?:play|put on|watch|find) (.+?) on (?:dstv|d stv|dstv stream)$").find(t)?.let { m ->
-            val d = dstvApp(context) ?: return Reply("DStv isn't set up as one of your apps.", cards)
+            val d = dstvApp(context) ?: return Reply(if (serviceApp(context, "DStv") == null) "The DStv app isn't installed on the TV." else "DStv isn't ticked as an app you pay for. Tick it in Settings, AI agent.", cards)
             playOnDstv(context, d, m.groupValues[1].replaceFirstChar { it.uppercase() }); return Reply("Looking for ${m.groupValues[1]} on DStv.", cards)
         }
         // "play staying alive" / "play the big bang theory": a show if the name matches one, otherwise a song
@@ -409,7 +409,11 @@ TV commands: tv_control. Opening an app: open_app. "What's on" or "what am I wat
             if (!named) {
                 val k = { x: String -> x.lowercase().removePrefix("the ").replace(Regex("[^a-z0-9]"), "") }
                 val show = JustWatch.search(q).firstOrNull { k(it.title) == k(q) || (k(q).length > 5 && k(it.title).startsWith(k(q))) }
-                if (show != null && t.startsWith("listen").not()) {
+                // a film called "Staying Alive" exists too: only treat it as a show when you can actually watch it here,
+                // or you clearly asked to watch something
+                val watchable = show != null && show.streaming.any { o -> subscribed(context, o) && serviceApp(context, o.service) != null }
+                val wantsVideo = Regex("^(watch|put on)\\b|\\b(movie|film|series|show|episode|season)\\b").containsMatchIn(t)
+                if (show != null && !t.startsWith("listen") && (watchable || wantsVideo || Voice.findApp(Apps.installed(context), "spotify") == null)) {
                     s.last = listOf(show); cards.put(card(context, show))
                     val r = playTitle(context, s, show.title, show.year, "")
                     if (r.optBoolean("ok")) return Reply("Playing ${show.title} on ${r.optString("playing_on")}.", cards)
