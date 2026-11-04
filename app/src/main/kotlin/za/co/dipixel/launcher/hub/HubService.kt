@@ -48,10 +48,12 @@ class HubService : Service() {
             val ctx = applicationContext
             Shell.run(ctx, "echo ok")
             // let Mi TV see which app is open, and read what's playing (for Continue watching)
-            Shell.run(ctx, "appops set ${ctx.packageName} GET_USAGE_STATS allow; appops set ${ctx.packageName} SYSTEM_ALERT_WINDOW allow; " +
+            Shell.run(ctx, "appops set ${ctx.packageName} GET_USAGE_STATS allow; pm grant ${ctx.packageName} android.permission.RECORD_AUDIO; appops set ${ctx.packageName} SYSTEM_ALERT_WINDOW allow; " +
                 "cmd notification allow_listener ${ctx.packageName}/za.co.dipixel.launcher.watch.WatchListener")
             Injector.ensureStarted(ctx)
+            SystemTune.applyIfNeeded(ctx)
         }.start()
+        SystemTune.registerWake(applicationContext)
         registerAppChanges()
         za.co.dipixel.launcher.art.ArtRepo.refreshIfDue(applicationContext)
     }

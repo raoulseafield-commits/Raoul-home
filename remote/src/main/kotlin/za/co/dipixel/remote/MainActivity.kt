@@ -168,6 +168,7 @@ class MainActivity : ComponentActivity() {
     private var thinking by mutableStateOf(false)
     private var handsFree by mutableStateOf(true)
     private var tts: TextToSpeech? = null
+    private var voiceOn by mutableStateOf(true)
     private var ttsReady = false
     private val session by lazy {
         val p = getSharedPreferences("remote", MODE_PRIVATE)
@@ -259,7 +260,8 @@ class MainActivity : ComponentActivity() {
             }
             chat.add(ChatMsg(false, reply, cards))
             onReply?.invoke(reply)
-            if (ttsReady) tts?.speak(reply, TextToSpeech.QUEUE_FLUSH, null, if (reply.trim().endsWith("?")) "q" else "a")
+            if (r?.optBoolean("speak", true) != false) voiceOn = true else voiceOn = false
+            if (ttsReady && voiceOn) tts?.speak(reply, TextToSpeech.QUEUE_FLUSH, null, if (reply.trim().endsWith("?")) "q" else "a")
             refreshState()
         }
     }
@@ -757,17 +759,7 @@ class MainActivity : ComponentActivity() {
         var confirmUnpair by remember { mutableStateOf(false) }
         var note by remember { mutableStateOf("") }
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            SectionLabel("NIGHT")
-            Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Card).padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Rounded.Bedtime, contentDescription = null, tint = Accent)
-                Spacer(Modifier.width(12.dp))
-                Column(Modifier.weight(1f)) {
-                    Text("Night mode", color = Color.White, fontSize = 15.sp)
-                    Text("Dims the TV screen and warms the colours", color = Faint, fontSize = 12.sp)
-                }
-                Switch(checked = tv.night, onCheckedChange = { on -> scope.launch { hub.night(on); refreshState() } },
-                    colors = SwitchDefaults.colors(checkedTrackColor = Accent, checkedThumbColor = Color(0xFF1A1020)))
-            }
+            SectionLabel("SLEEP TIMER")
             Text(
                 if (tv.sleepAt > 0) "Sleep timer: ${((tv.sleepAt - System.currentTimeMillis()) / 60_000L + 1).coerceAtLeast(0)} min left" else "Sleep timer",
                 color = Dim, fontSize = 13.sp
@@ -838,7 +830,7 @@ class MainActivity : ComponentActivity() {
         var msg by remember { mutableStateOf("") }
         LaunchedEffect(Unit) {
             hub.agentStatus()?.let { st ->
-                hasKey = st.optBoolean("hasKey")
+                hasKey = st.optBoolean("hasKey"); voiceOn = st.optBoolean("voice", true)
                 st.optJSONArray("subscriptions")?.let { a -> subs = (0 until a.length()).map { a.getString(it) } }
             }
         }
@@ -853,16 +845,40 @@ class MainActivity : ComponentActivity() {
                 }) { Text("Save", color = Accent) }
             }
             if (msg.isNotBlank()) Text(msg, color = Accent, fontSize = 12.sp)
-            Text("Services you pay for", color = Faint, fontSize = 12.sp)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text("Spoken replies", color = Color.White, fontSize = 15.sp)
+                    Text("The agent talks back out loud", color = Faint, fontSize = 12.sp)
+                }
+                Switch(checked = voiceOn, onCheckedChange = { on -> voiceOn = on; if (!on) tts?.stop(); scope.launch { hub.setVoice(on) } },
+                    colors = SwitchDefaults.colors(checkedTrackColor = Accent, checkedThumbColor = Color(0xFF1A1020)))
+            }
+            Text("Apps you pay for (the agent plays from these)", color = Faint, fontSize = 12.sp)
+            var tvApps by remember { mutableStateOf(listOf<String>()) }
+            var custom by remember { mutableStateOf("") }
+            LaunchedEffect(Unit) {
+                val a = hub.apps()?.optJSONArray("all") ?: JSONArray()
+                val skip = Regex("youtube|settings|google|play store|files|downloader|mi tv|live channels|cast", RegexOption.IGNORE_CASE)
+                tvApps = (0 until a.length()).map { a.getJSONObject(it).getString("label") }.filter { !skip.containsMatchIn(it) }
+            }
+            val options = (listOf("Netflix", "DStv", "Spotify", "Showmax", "Prime Video", "Disney+", "Apple TV") + tvApps + subs)
+                .distinctBy { it.lowercase().replace(Regex("[^a-z0-9]"), "") }
             @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
             androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                listOf("Netflix", "DStv", "Showmax", "Prime Video", "Disney+").forEach { svc ->
+                options.forEach { svc ->
                     val on = subs.any { it.equals(svc, true) }
                     Box(Modifier.clip(RoundedCornerShape(12.dp)).background(if (on) Accent else CardHi).clickable {
                         subs = if (on) subs.filterNot { it.equals(svc, true) } else subs + svc
                         scope.launch { hub.setSubscriptions(subs) }
                     }.padding(horizontal = 10.dp, vertical = 8.dp)) { Text(svc, color = if (on) Color(0xFF1A1020) else Color.White, fontSize = 12.sp) }
                 }
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.weight(1f)) { Field(custom, "Add another app you pay for", KeyboardType.Text) { custom = it } }
+                TextButton(enabled = custom.isNotBlank(), onClick = {
+                    val n = custom.trim(); custom = ""
+                    if (subs.none { it.equals(n, true) }) { subs = subs + n; scope.launch { hub.setSubscriptions(subs) } }
+                }) { Text("Add", color = Accent) }
             }
         }
     }

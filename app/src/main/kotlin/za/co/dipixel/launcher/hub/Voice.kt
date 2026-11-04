@@ -106,7 +106,7 @@ object Voice {
 
     fun play(context: Context, app: TvApp, query: String): String {
         val pkg = app.packageName
-        za.co.dipixel.launcher.watch.Watching.record(context, query.replaceFirstChar { it.uppercase() }, pkg)
+        if (pkg.contains("youtube")) za.co.dipixel.launcher.watch.Watching.record(context, query.replaceFirstChar { it.uppercase() }, pkg)
         val q = URLEncoder.encode(query, "UTF-8")
 
         if (pkg.contains("youtube")) {
@@ -115,6 +115,10 @@ object Voice {
             if (start(context, view("https://www.youtube.com/results?search_query=$q", pkg))) return "Searching ${app.label} for \"$query\""
             return if (start(context, launchIntent(context, pkg))) "Opened ${app.label}" else "Couldn't open ${app.label}"
         }
+
+        if (pkg.contains("spotify")) return Autoplay.spotify(context, app, query)
+        // films and series: find the exact title and play it (Netflix, DStv, ...)
+        Agent.playByName(context, query, pkg)?.let { return it }
 
         // Most media apps support Android's "play from search" (it's what Google Assistant uses)
         val fromSearch = Intent(MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH)

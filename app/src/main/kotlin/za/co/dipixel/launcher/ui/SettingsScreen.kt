@@ -49,7 +49,7 @@ import za.co.dipixel.launcher.data.Show
 import za.co.dipixel.launcher.data.TvApp
 import za.co.dipixel.launcher.data.Wallpapers
 
-private val sections = listOf("Profiles", "Apps", "Wallpaper", "Clock & weather", "Mi Remote", "System")
+private val sections = listOf("Profiles", "Apps", "AI agent", "Wallpaper", "Clock & weather", "Mi Remote", "System")
 
 @Composable
 fun SettingsScreen(config: Config, apps: List<TvApp>, onConfig: (Config) -> Unit) {
@@ -73,9 +73,10 @@ fun SettingsScreen(config: Config, apps: List<TvApp>, onConfig: (Config) -> Unit
             when (section) {
                 0 -> ProfilesSection(config, apps, onConfig)
                 1 -> AppsSection(config, apps, onConfig)
-                2 -> WallpapersSection(config, onConfig)
-                3 -> ClockSection(config, onConfig)
-                4 -> PhoneRemoteSection()
+                2 -> AgentSection(apps)
+                3 -> WallpapersSection(config, onConfig)
+                4 -> ClockSection(config, onConfig)
+                5 -> PhoneRemoteSection()
                 else -> SystemSection()
             }
         }
@@ -147,6 +148,19 @@ private fun ProfilesSection(config: Config, apps: List<TvApp>, onConfig: (Config
                         color = Palette.textFaint, fontSize = 13.sp)
                 }
             }
+            item {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(start = 12.dp)) {
+                    Text("Netflix / DStv profile", color = Palette.textDim, fontSize = 14.sp, modifier = Modifier.width(190.dp))
+                    (0 until 5).forEach { slot ->
+                        val sel = profile.appProfile == slot
+                        Tile(onClick = { onConfig(config.copy(profiles = config.profiles.mapIndexed { i, p -> if (i == pi) p.copy(appProfile = slot) else p })) },
+                            modifier = Modifier.size(40.dp), corner = 20, container = if (sel) Color.White else Color(0x1FFFFFFF), focusedContainer = if (sel) Color.White else Color(0x40FFFFFF)) {
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("${slot + 1}", color = if (sel) Palette.ink else Palette.text, fontSize = 15.sp, fontWeight = FontWeight.Medium) }
+                        }
+                    }
+                    Text(if (profile.appProfile == 0) "first profile" else "profile ${profile.appProfile + 1} from the left", color = Palette.textFaint, fontSize = 12.sp)
+                }
+            }
             items(profile.shows.size) { si ->
                 val show = profile.shows[si]
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 12.dp)) {
@@ -163,6 +177,41 @@ private fun ProfilesSection(config: Config, apps: List<TvApp>, onConfig: (Config
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Icon(Icons.Rounded.Delete, contentDescription = "Remove", tint = Palette.text) }
                     }
                 }
+            }
+        }
+    }
+}
+
+// ---------------- AI agent ----------------
+
+@Composable
+private fun AgentSection(apps: List<TvApp>) {
+    val context = LocalContext.current
+    var voice by remember { mutableStateOf(za.co.dipixel.launcher.hub.Agent.voice(context)) }
+    var subs by remember { mutableStateOf(za.co.dipixel.launcher.hub.Agent.subscriptions(context)) }
+    var custom by remember { mutableStateOf("") }
+    fun save(n: List<String>) { subs = n; za.co.dipixel.launcher.hub.Agent.setSubscriptions(context, n) }
+    val skip = Regex("youtube|settings|google|play store|files|downloader|mi tv|live channels|cast|file", RegexOption.IGNORE_CASE)
+    val options = (listOf("Netflix", "DStv", "Spotify", "Showmax", "Prime Video", "Disney+", "Apple TV") + apps.map { it.label }.filter { !skip.containsMatchIn(it) } + subs)
+        .distinctBy { it.lowercase().replace(Regex("[^a-z0-9]"), "") }
+    LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp), contentPadding = PaddingValues(bottom = 40.dp)) {
+        item { SectionTitle("VOICE") }
+        item {
+            CheckRow("Spoken replies", voice, { voice = !voice; za.co.dipixel.launcher.hub.Agent.setVoice(context, voice) },
+                sub = "The agent talks back out loud on Mi Remote. Off: replies show as text only")
+        }
+        item { Spacer(Modifier.height(10.dp)); SectionTitle("APPS YOU PAY FOR") }
+        item { Text("The agent checks these before it plays a film, series or song. YouTube is always free.", color = Palette.textFaint, fontSize = 13.sp) }
+        items(options.size) { i ->
+            val svc = options[i]
+            val on = subs.any { it.equals(svc, true) }
+            CheckRow(svc, on, { save(if (on) subs.filterNot { it.equals(svc, true) } else subs + svc) })
+        }
+        item {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Field(custom, "Another app you pay for", { custom = it }, Modifier.width(360.dp))
+                Spacer(Modifier.width(12.dp))
+                ActionButton("Add", { val n = custom.trim(); if (n.isNotEmpty() && subs.none { it.equals(n, true) }) save(subs + n); custom = "" }, Modifier.width(120.dp))
             }
         }
     }
@@ -299,6 +348,26 @@ private fun SystemSection() {
                 ActionButton("Screensaver settings (pick Mi TV Art, set the delay)", {
                     try { context.startActivity(Intent(Settings.ACTION_DREAM_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) } catch (e: Exception) { Apps.openSystemSettings(context) }
                 }, Modifier.width(560.dp))
+            }
+        }
+        item { Spacer(Modifier.height(12.dp)) }
+        item { SectionTitle("TV POWER") }
+        item {
+            var on by remember { mutableStateOf(za.co.dipixel.launcher.data.ConfigStore.load(context).tvFollowsBox) }
+            CheckRow("Turn the TV on with the box", on, {
+                on = !on; za.co.dipixel.launcher.data.ConfigStore.update(context) { it.copy(tvFollowsBox = on) }
+                Thread { za.co.dipixel.launcher.hub.SystemTune.cec(context) }.start()
+            }, sub = "Box off turns the TV off, box on turns the TV on. Samsung: Anynet+ (HDMI-CEC) must be on")
+        }
+        item { Spacer(Modifier.height(12.dp)); SectionTitle("SPEED") }
+        item {
+            var res by remember { mutableStateOf(za.co.dipixel.launcher.hub.SystemTune.lastResult) }
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(res, color = Palette.textFaint, fontSize = 13.sp)
+                ActionButton("Run the speed tune-up again", {
+                    res = "running..."
+                    Thread { za.co.dipixel.launcher.hub.SystemTune.apply(context); res = za.co.dipixel.launcher.hub.SystemTune.lastResult }.start()
+                }, Modifier.width(360.dp))
             }
         }
         item { Spacer(Modifier.height(12.dp)) }

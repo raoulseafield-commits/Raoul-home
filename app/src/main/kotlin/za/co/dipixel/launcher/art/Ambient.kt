@@ -34,7 +34,7 @@ import kotlin.random.Random
 /**
  * The art + lofi radio experience, shared by the system screensaver and the "Art" button.
  * OK or Right: new picture and new song (pixel dissolve). Left: previous picture. Back: leave.
- * Time and weather sit small in the bottom right, the song small in the bottom left.
+ * Time over weather in the bottom right; four beat bars + "lofi radio" in the bottom left.
  */
 class Ambient(private val context: Context, private val withRadio: Boolean) {
 
@@ -43,6 +43,8 @@ class Ambient(private val context: Context, private val withRadio: Boolean) {
     private lateinit var song: TextView
     private lateinit var hint: TextView
     private var weatherView: TextView? = null
+    private var weatherIcon: WeatherIconView? = null
+    private var bars: BeatBars? = null
     private var queue: MutableList<Art> = mutableListOf()
     private val history = ArrayList<Art>()
     private var current: Bitmap? = null
@@ -51,6 +53,8 @@ class Ambient(private val context: Context, private val withRadio: Boolean) {
     private val slideMs = 90_000L
     private var player: ExoPlayer? = null
     private var stations: List<Radio.Station> = emptyList()
+    @Volatile var nowTitle = ""
+    @Volatile var nowStation = ""
     private var stationIndex = Random.nextInt(0, 1000)
 
     fun build(): View {
@@ -61,22 +65,36 @@ class Ambient(private val context: Context, private val withRadio: Boolean) {
             background = GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP, intArrayOf(0x66000000, 0x00000000))
         }, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(140), Gravity.BOTTOM))
 
-        // bottom right: time · weather
-        val corner = LinearLayout(context).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(0, 0, dp(40), dp(30)) }
+        // bottom right: big time, with the weather icon + temperature under it
+        val ui = try { androidx.core.content.res.ResourcesCompat.getFont(context, za.co.dipixel.launcher.R.font.inter) } catch (e: Exception) { null }
+        fun weight(w: Int): android.graphics.Typeface? = if (ui != null && android.os.Build.VERSION.SDK_INT >= 28) android.graphics.Typeface.create(ui, w, false) else ui
+        val corner = LinearLayout(context).apply { orientation = LinearLayout.VERTICAL; gravity = Gravity.CENTER_HORIZONTAL; setPadding(0, 0, dp(44), dp(30)) }
         corner.addView(TextClock(context).apply {
-            format24Hour = "H:mm"; format12Hour = "h:mm"; setTextColor(0xE6FFFFFF.toInt()); textSize = 18f; setShadowLayer(8f, 0f, 1f, 0xAA000000.toInt())
+            format24Hour = "HH:mm"; format12Hour = "h:mm"; setTextColor(0xF2FFFFFF.toInt()); textSize = 46f
+            typeface = weight(300); includeFontPadding = false; letterSpacing = 0.02f
+            setShadowLayer(14f, 0f, 2f, 0x99000000.toInt())
         })
-        weatherView = TextView(context).apply { setTextColor(0xCCFFFFFF.toInt()); textSize = 15f; setShadowLayer(8f, 0f, 1f, 0xAA000000.toInt()); setPadding(dp(10), 0, 0, 0) }
-        corner.addView(weatherView)
+        val wRow = LinearLayout(context).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL; setPadding(0, dp(2), 0, 0) }
+        weatherIcon = WeatherIconView(context)
+        wRow.addView(weatherIcon, LinearLayout.LayoutParams(dp(22), dp(22)).apply { rightMargin = dp(7) })
+        weatherView = TextView(context).apply { setTextColor(0xE6FFFFFF.toInt()); textSize = 15f; typeface = weight(400); setShadowLayer(10f, 0f, 1f, 0x99000000.toInt()) }
+        wRow.addView(weatherView)
+        corner.addView(wRow)
         root.addView(corner, FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM or Gravity.END))
 
-        // bottom left: lofi radio · song
-        song = TextView(context).apply {
-            setTextColor(0xB3FFFFFF.toInt()); textSize = 13f; setShadowLayer(8f, 0f, 1f, 0xAA000000.toInt())
-            setPadding(dp(40), 0, 0, dp(32)); maxLines = 1; visibility = if (withRadio) View.VISIBLE else View.GONE
-            text = " ♪  lofi radio"
+        // bottom left: 4 beat bars + "lofi radio", like the video
+        val badge = LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL; gravity = Gravity.BOTTOM; setPadding(dp(44), 0, 0, dp(36))
+            visibility = if (withRadio) View.VISIBLE else View.GONE
         }
-        root.addView(song, FrameLayout.LayoutParams(dp(640), ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM or Gravity.START))
+        bars = BeatBars(context)
+        badge.addView(bars, LinearLayout.LayoutParams(dp(15), dp(13)).apply { rightMargin = dp(8); bottomMargin = dp(2) })
+        song = TextView(context).apply {
+            setTextColor(0xD9FFFFFF.toInt()); textSize = 13f; typeface = weight(500); includeFontPadding = false
+            setShadowLayer(8f, 0f, 1f, 0xAA000000.toInt()); maxLines = 1; text = "lofi radio"
+        }
+        badge.addView(song)
+        root.addView(badge, FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM or Gravity.START))
 
         hint = TextView(context).apply {
             setTextColor(0xE6FFFFFF.toInt()); textSize = 14f; setPadding(dp(18), dp(10), dp(18), dp(10))
@@ -94,7 +112,7 @@ class Ambient(private val context: Context, private val withRadio: Boolean) {
             val w = kotlinx.coroutines.runBlocking { Weather.fetch(c.latitude, c.longitude) }
             mood = ArtRepo.moodFor(w?.code, w?.isDay)
             ArtRepo.ensureMood(context, mood)
-            handler.post { if (w != null) weatherView?.text = "·  ${w.tempC}°  ${w.description}" }
+            handler.post { if (w != null) { weatherView?.text = "${w.tempC}°  ${w.description}"; weatherIcon?.isDay = w.isDay; weatherIcon?.code = w.code } }
         }.start()
         ArtRepo.refreshIfDue(context)
         showNext(transition = false)
@@ -103,6 +121,7 @@ class Ambient(private val context: Context, private val withRadio: Boolean) {
 
     fun stop() {
         handler.removeCallbacksAndMessages(null)
+        bars?.release()
         player?.release(); player = null
         if (live === this) live = null
         restoreVolume()
@@ -259,13 +278,15 @@ class Ambient(private val context: Context, private val withRadio: Boolean) {
         gain = levelGain(ConfigStore.load(context).lofiLevel)
         duckVolume()
         fadeIn(p)
+        bars?.attach(p.audioSessionId)
         p.addListener(object : Player.Listener {
             override fun onMetadata(metadata: Metadata) {
                 for (i in 0 until metadata.length()) {
                     val e = metadata.get(i)
-                    if (e is IcyInfo && !e.title.isNullOrBlank()) song.text = "♪  " + e.title
+                    if (e is IcyInfo && !e.title.isNullOrBlank()) nowTitle = e.title!!
                 }
             }
+            override fun onIsPlayingChanged(isPlaying: Boolean) { bars?.setPlaying(isPlaying) }
             override fun onPlayerError(error: PlaybackException) { handler.postDelayed({ nextStation() }, 800) }
         })
         Thread {
@@ -278,9 +299,9 @@ class Ambient(private val context: Context, private val withRadio: Boolean) {
 
     private fun playStation() {
         val p = player ?: return
-        if (stations.isEmpty()) { song.text = "♪  lofi radio offline"; return }
+        if (stations.isEmpty()) { song.text = "lofi radio offline"; return }
         val st = stations[Math.floorMod(stationIndex, stations.size)]
-        song.text = "♪  ${st.name}"
+        song.text = "lofi radio"; nowStation = st.name
         p.setMediaItem(MediaItem.fromUri(st.url))
         p.prepare()
         p.play()

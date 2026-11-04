@@ -1,7 +1,23 @@
 package za.co.dipixel.launcher.ui
 
 import android.graphics.drawable.Drawable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -40,7 +56,7 @@ object Palette {
     val textFaint = Color(0x99FFFFFF)
 }
 
-/** Standard focusable tile. Scales and gets a white ring when focused, like tvOS. */
+/** Standard focusable tile. Scales when focused and gets the thin rotating, pulsing gradient ring. */
 @Composable
 fun Tile(
     onClick: () -> Unit,
@@ -53,10 +69,13 @@ fun Tile(
     content: @Composable BoxScope.() -> Unit
 ) {
     val shape = RoundedCornerShape(corner.dp)
+    val interaction = remember { MutableInteractionSource() }
+    val focused by interaction.collectIsFocusedAsState()
     Surface(
         onClick = onClick,
         onLongClick = onLongClick,
         modifier = modifier,
+        interactionSource = interaction,
         shape = ClickableSurfaceDefaults.shape(shape = shape),
         colors = ClickableSurfaceDefaults.colors(
             containerColor = container,
@@ -67,14 +86,38 @@ fun Tile(
             pressedContentColor = Palette.text
         ),
         scale = ClickableSurfaceDefaults.scale(focusedScale = focusedScale, pressedScale = focusedScale),
-        border = ClickableSurfaceDefaults.border(
-            focusedBorder = Border(BorderStroke(3.dp, Color.White), inset = 0.dp, shape = shape)
-        ),
+        border = ClickableSurfaceDefaults.border(focusedBorder = Border.None),
         glow = ClickableSurfaceDefaults.glow(
-            focusedGlow = Glow(elevationColor = Color(0x80000000), elevation = 12.dp)
-        ),
-        content = content
-    )
+            focusedGlow = Glow(elevationColor = Color(0x667B4FD0), elevation = 14.dp)
+        )
+    ) {
+        content()
+        if (focused) FocusRing(corner, Modifier.matchParentSize())
+    }
+}
+
+/** The Mi Remote ambient gradient: violet, pink, blush. */
+val RingColors = listOf(Color(0xFF7B4FD0), Color(0xFFE0609B), Color(0xFFF2C6E0), Color(0xFFB38CFF), Color(0xFF7B4FD0))
+
+/** Thin gradient outline that slowly turns and breathes. Only runs on the one focused item. */
+@Composable
+fun FocusRing(corner: Int, modifier: Modifier = Modifier) {
+    val t = rememberInfiniteTransition(label = "ring")
+    val angle by t.animateFloat(0f, 360f, infiniteRepeatable(tween(3600, easing = LinearEasing)), label = "angle")
+    val pulse by t.animateFloat(0f, 1f, infiniteRepeatable(tween(1300, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "pulse")
+    Canvas(modifier) {
+        val w = (1.5f + 0.9f * pulse).dp.toPx()
+        val rad = Math.toRadians(angle.toDouble())
+        val r = size.maxDimension / 2f
+        val c = center
+        val dx = (kotlin.math.cos(rad) * r).toFloat(); val dy = (kotlin.math.sin(rad) * r).toFloat()
+        val brush = Brush.linearGradient(RingColors, start = Offset(c.x - dx, c.y - dy), end = Offset(c.x + dx, c.y + dy))
+        val cr = corner.dp.toPx()
+        drawRoundRect(
+            brush = brush, topLeft = Offset(w / 2, w / 2), size = Size(size.width - w, size.height - w),
+            cornerRadius = CornerRadius(cr - w / 2, cr - w / 2), style = Stroke(width = w), alpha = 0.7f + 0.3f * pulse
+        )
+    }
 }
 
 /** Pill button with optional icon, used for profile chips and the top right controls. */

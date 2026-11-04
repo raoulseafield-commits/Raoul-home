@@ -40,12 +40,21 @@ object Agent {
     private fun prefs(c: Context) = c.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
     fun key(c: Context): String = prefs(c).getString("key", "") ?: ""
     fun setKey(c: Context, k: String) = prefs(c).edit().putString("key", k.trim()).apply()
-    fun subscriptions(c: Context): List<String> =
-        (prefs(c).getString("subs", null) ?: "Netflix,DStv").split(",").map { it.trim() }.filter { it.isNotEmpty() }
+    fun subscriptions(c: Context): List<String> {
+        val p = prefs(c)
+        if (!p.getBoolean("subsV2", false)) {   // Spotify is paid too
+            val old = (p.getString("subs", null) ?: "Netflix,DStv").split(",").map { it.trim() }.filter { it.isNotEmpty() }
+            p.edit().putString("subs", (old + if (old.any { it.equals("Spotify", true) }) emptyList() else listOf("Spotify")).joinToString(",")).putBoolean("subsV2", true).apply()
+        }
+        return (p.getString("subs", null) ?: "Netflix,DStv,Spotify").split(",").map { it.trim() }.filter { it.isNotEmpty() }.distinctBy { it.lowercase() }
+    }
+    /** Spoken replies on the phones (one setting for the whole house). */
+    fun voice(c: Context): Boolean = prefs(c).getBoolean("voice", true)
+    fun setVoice(c: Context, on: Boolean) = prefs(c).edit().putBoolean("voice", on).apply()
     fun setSubscriptions(c: Context, s: List<String>) = prefs(c).edit().putString("subs", s.joinToString(",")).apply()
 
     fun status(c: Context): JSONObject = JSONObject().put("ok", true).put("hasKey", key(c).isNotBlank())
-        .put("subscriptions", JSONArray(subscriptions(c))).put("model", prefs(c).getString("model", MODELS.first()))
+        .put("subscriptions", JSONArray(subscriptions(c))).put("voice", voice(c)).put("model", prefs(c).getString("model", MODELS.first()))
 
     fun reset(session: String) { synchronized(sessions) { sessions.remove(session) } }
 
@@ -77,14 +86,15 @@ object Agent {
         val profile = c.profiles.getOrNull(c.activeProfile)?.name ?: "family"
         return """
 You are Mi TV, the voice assistant on a family TV in Pretoria, South Africa. Today is ${LocalDate.now()}.
-Paid streaming subscriptions in this house: ${subscriptions(context).joinToString(", ")}. Free: YouTube, YouTube Kids. Music: Spotify.
+Paid subscriptions in this house: ${subscriptions(context).joinToString(", ")}. Free: YouTube, YouTube Kids. Music: Spotify.
 The person talking is on the "$profile" profile.
 Reply in one or two short spoken sentences. No markdown, no lists, no emojis.
 For questions about films or series (the latest one, where to watch it, is it on Netflix) call find_title. It returns South African availability.
 Choose the best match yourself: for "latest" pick the most recent release year. Never invent availability.
 Then say where it streams. If it is on a service they pay for, ask whether to play it. If not, say which service has it, or that it can only be rented or bought, and where.
 When they say yes, play it, put it on, or similar, call play_title for that title.
-Kids videos, clips, songs for children: play_youtube (kids=true for the Kids profile or children's content). Songs and artists: play_music.
+Kids videos, clips, songs for children: play_youtube (kids=true for the Kids profile or children's content). Songs, artists, albums and playlists: play_music (Spotify), unless they ask for YouTube.
+When something starts, just say it is playing. Never say you can only open the app.
 TV commands: tv_control. Opening an app: open_app. "What's on" or "what am I watching": whats_on.
 """.trim()
     }
@@ -106,7 +116,7 @@ TV commands: tv_control. Opening an app: open_app. "What's on" or "what am I wat
             .put(fn("play_music", "Play a song, artist, album or playlist on Spotify.", JSONObject().put("query", str("Song, artist or playlist")), listOf("query")))
             .put(fn("tv_control", "Control the TV.",
                 JSONObject().put("action", JSONObject().put("type", "string").put("enum", JSONArray(listOf(
-                    "pause", "play", "volume_up", "volume_down", "mute", "home", "back", "next", "previous", "sleep_timer", "cancel_sleep", "night_mode_on", "night_mode_off", "screensaver", "next_lofi_song"))))
+                    "pause", "play", "volume_up", "volume_down", "mute", "home", "back", "next", "previous", "sleep_timer", "cancel_sleep", "screensaver", "next_lofi_song"))))
                     .put("minutes", JSONObject().put("type", "integer")), listOf("action")))
             .put(fn("open_app", "Open an app on the TV.", JSONObject().put("name", str("App name")), listOf("name")))
             .put(fn("whats_on", "Which app is on the TV screen right now.", null, emptyList()))
@@ -200,7 +210,7 @@ TV commands: tv_control. Opening an app: open_app. "What's on" or "what am I wat
         "play_music" -> {
             val app = Voice.findApp(Apps.installed(context), "spotify")
             if (app == null) JSONObject().put("ok", false).put("error", "Spotify isn't installed")
-            else JSONObject().put("ok", true).put("message", Voice.play(context, app, a.optString("query")))
+            else JSONObject().put("ok", true).put("message", Autoplay.spotify(context, app, a.optString("query")))
         }
         "tv_control" -> JSONObject().put("ok", control(context, a.optString("action"), a.optInt("minutes", 30)))
         "open_app" -> {
@@ -227,8 +237,6 @@ TV commands: tv_control. Opening an app: open_app. "What's on" or "what am I wat
         "previous" -> Hub.pressKey(context, KeyEvent.KEYCODE_MEDIA_PREVIOUS)
         "sleep_timer" -> { val m = minutes.coerceIn(1, 240); Sleep.schedule(context, m); ConfigStore.update(context) { it.copy(sleepAt = System.currentTimeMillis() + m * 60_000L) }; true }
         "cancel_sleep" -> { Sleep.cancel(context); ConfigStore.update(context) { it.copy(sleepAt = 0L) }; true }
-        "night_mode_on" -> { ConfigStore.update(context) { it.copy(nightMode = true) }; true }
-        "night_mode_off" -> { ConfigStore.update(context) { it.copy(nightMode = false) }; true }
         "screensaver" -> Hub.startScreensaver(context)
         "next_lofi_song" -> Hub.skipAmbient(context)
         else -> false
@@ -285,24 +293,42 @@ TV commands: tv_control. Opening an app: open_app. "What's on" or "what am I wat
                         ?: "${t.title} isn't on your services")
                 .put("streaming_elsewhere", JSONArray(t.streaming.map { it.service })).put("rent_or_buy", JSONArray(t.rentBuy.map { it.service }))
         val (offer, app) = pick
-        val ok = launch(context, offer, app)
+        val ok = launch(context, offer, app, t.title)
         if (ok) Watching.record(context, t.title, app.packageName, offer.url,
             Show(t.title, app.packageName, app.label, offer.url, poster = t.poster, summary = t.description, meta = listOf(t.year.takeIf { it > 0 }?.toString() ?: "", app.label).filter { it.isNotBlank() }.joinToString("  ·  ")))
         return JSONObject().put("ok", ok).put("title", t.title).put("playing_on", app.label)
     }
 
-    /** Open the exact title in its app. Netflix gets a "watch" link so it starts playing. */
-    fun launch(context: Context, offer: JustWatch.Offer, app: TvApp): Boolean {
+    /** Open the exact title in its app, then keep at it (profile screen, Play button) until it actually plays. */
+    fun launch(context: Context, offer: JustWatch.Offer, app: TvApp, title: String = ""): Boolean {
         val netflixId = Regex("netflix\\.com/(?:[a-z-]+/)?title/(\\d+)").find(offer.url)?.groupValues?.get(1)
-        if (netflixId != null) {
-            val watch = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.netflix.com/watch/$netflixId")).setPackage(app.packageName).putExtra("source", "30")
-            if (Voice.start(context, watch)) return true
-            val page = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.netflix.com/title/$netflixId")).setPackage(app.packageName).putExtra("source", "30")
-            if (Voice.start(context, page)) return true
+        val links = buildList {
+            if (netflixId != null) {
+                add(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.netflix.com/watch/$netflixId")).setPackage(app.packageName).putExtra("source", "30"))
+                add(Intent(Intent.ACTION_VIEW, Uri.parse("https://www.netflix.com/title/$netflixId")).setPackage(app.packageName).putExtra("source", "30"))
+            }
+            if (offer.url.isNotBlank()) add(Intent(Intent.ACTION_VIEW, Uri.parse(offer.url)).setPackage(app.packageName))
         }
-        if (offer.url.isNotBlank() && Voice.start(context, Intent(Intent.ACTION_VIEW, Uri.parse(offer.url)).setPackage(app.packageName))) return true
-        // last resort: just open the app
-        return Voice.start(context, launchIntent(context, app.packageName))
+        for (link in links) {
+            if (Voice.start(context, Intent(link))) {
+                Autoplay.follow(context, app.packageName, title, { Voice.start(context, Intent(link)) })
+                return true
+            }
+        }
+        // no link the app understands: open it and use its own search
+        if (!Voice.start(context, launchIntent(context, app.packageName))) return false
+        Autoplay.searchAndPlay(context, app.packageName, title)
+        return true
+    }
+
+    /** "Play Stranger Things on Netflix" from the simple voice path: find it, then play it like the agent does. */
+    fun playByName(context: Context, query: String, preferPkg: String): String? {
+        val list = JustWatch.search(query)
+        if (list.isEmpty()) return null
+        val s = Session().also { it.last = list }
+        val pref = Apps.installed(context).firstOrNull { it.packageName == preferPkg }?.label ?: ""
+        val r = playTitle(context, s, list.first().title, list.first().year, pref)
+        return if (r.optBoolean("ok")) "Playing ${r.optString("title")} on ${r.optString("playing_on")}" else null
     }
 
     private fun launchIntent(context: Context, pkg: String): Intent? =

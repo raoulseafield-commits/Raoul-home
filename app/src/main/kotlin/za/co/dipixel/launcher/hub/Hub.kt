@@ -126,11 +126,9 @@ object Hub {
         za.co.dipixel.launcher.watch.Watching.record(context, show.title, show.providerPackage, show.url, show)
         val apps = Apps.installed(context)
         val app = apps.firstOrNull { it.packageName == show.providerPackage }
-        if (show.url.isNotBlank()) {
-            val i = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(show.url))
-            if (show.providerPackage.isNotBlank()) i.setPackage(show.providerPackage)
-            if (Voice.start(context, i)) return "Opening ${show.title}"
-        }
+        // straight into playback: title link, profile screen, Play button (see Autoplay)
+        if (show.url.isNotBlank() && app != null &&
+            Agent.launch(context, za.co.dipixel.launcher.data.JustWatch.Offer(app.label, "", "FLATRATE", show.url), app, show.title)) return "Playing ${show.title}"
         if (app != null) return Voice.play(context, app, show.title)
         return Voice.handle(context, "play ${show.title}")
     }
@@ -235,7 +233,7 @@ class HubServer(private val context: Context) : NanoHTTPD(Hub.PORT) {
             "/state" -> json(state())
             "/agent" -> {
                 val r = Agent.ask(context, body.optString("session", "default"), body.optString("text"))
-                json(JSONObject().put("ok", true).put("reply", r.text).put("cards", r.cards))
+                json(JSONObject().put("ok", true).put("reply", r.text).put("cards", r.cards).put("speak", Agent.voice(context)))
             }
             "/agent/status" -> json(Agent.status(context))
             "/agent/key" -> { Agent.setKey(context, body.optString("key")); json(Agent.status(context)) }
@@ -243,11 +241,14 @@ class HubServer(private val context: Context) : NanoHTTPD(Hub.PORT) {
                 val arr = body.optJSONArray("subscriptions") ?: JSONArray()
                 Agent.setSubscriptions(context, (0 until arr.length()).map { arr.getString(it) }); json(Agent.status(context))
             }
+            "/agent/voice" -> { Agent.setVoice(context, body.optBoolean("on", true)); json(Agent.status(context)) }
             "/agent/reset" -> { Agent.reset(body.optString("session", "default")); json(ok) }
             "/diag" -> json(JSONObject().put("ok", true)
                 .put("adb", Shell.run(context, "echo ok")?.trim() == "ok")
                 .put("injector", Injector.running)
                 .put("injectorStart", Injector.lastStartResult)
+                .put("autoplay", JSONArray(Autoplay.trace))
+                .put("tune", SystemTune.lastResult)
                 .put("injectorLog", Shell.run(context, "tail -n 30 ${Injector.LOG} 2>/dev/null") ?: ""))
             "/key" -> {
                 val code = Hub.keyCode(body.optString("key")) ?: return json(JSONObject().put("ok", false).put("message", "Unknown key"))

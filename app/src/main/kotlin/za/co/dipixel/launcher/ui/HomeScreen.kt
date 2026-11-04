@@ -161,7 +161,7 @@ fun HomeScreen(
                 val mins = ((config.sleepAt - System.currentTimeMillis()) / 60_000L).coerceAtLeast(0)
                 Text("Sleep in ${mins + 1} min", color = Palette.textDim, fontSize = 13.sp, fontFamily = UiFont, modifier = Modifier.padding(end = 12.dp))
             }
-            GlassCircle(Icons.Rounded.Bedtime, selected = config.nightMode) { nightMenu = !nightMenu }
+            GlassCircle(Icons.Rounded.Bedtime, selected = config.sleepAt > 0L) { nightMenu = !nightMenu }
         }
 
         // ---------- rows ----------
@@ -169,11 +169,11 @@ fun HomeScreen(
             if (profile.shows.isNotEmpty()) {
                 LazyRow(
                     modifier = Modifier.fillMaxWidth().onFocusChanged { if (!it.hasFocus) heroShow = null },
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(start = 40.dp, end = 40.dp, top = 14.dp, bottom = 12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                    contentPadding = PaddingValues(start = 40.dp, end = 40.dp, top = 12.dp, bottom = 10.dp)
                 ) {
                     itemsIndexed(profile.shows, key = { i, s -> s.title + i }) { _, show ->
-                        GlassShowCard(
+                        ShowCard(
                             show = show,
                             provider = apps.firstOrNull { it.packageName == show.providerPackage },
                             onClick = { Thread { za.co.dipixel.launcher.hub.Hub.playShow(context, show) }.start() },
@@ -212,7 +212,6 @@ fun HomeScreen(
             }
         }
 
-        if (config.nightMode) Box(Modifier.fillMaxSize().background(Color(0x8C1A0A00)))
 
         // ---------- menus ----------
         val menuApp = appMenu
@@ -236,7 +235,6 @@ fun HomeScreen(
             NightMenu(
                 config = config,
                 onClose = { nightMenu = false },
-                onToggleNight = { onConfig(config.copy(nightMode = !config.nightMode)) },
                 onSleep = { mins ->
                     Sleep.schedule(context, mins)
                     onConfig(config.copy(sleepAt = System.currentTimeMillis() + mins * 60_000L))
@@ -390,27 +388,19 @@ private fun GlassCircle(icon: ImageVector, selected: Boolean = false, onClick: (
 }
 
 @Composable
-private fun GlassShowCard(show: Show, provider: TvApp?, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Tile(
-        onClick = onClick, modifier = modifier.width(282.dp).height(74.dp), corner = 16,
-        container = Color(0x66101016), focusedContainer = Color(0x99202028), focusedScale = 1.06f
-    ) {
-        Row(Modifier.fillMaxSize().border(1.dp, Color(0x1FFFFFFF), RoundedCornerShape(16.dp)).padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.width(102.dp).height(58.dp).clip(RoundedCornerShape(10.dp)).background(Color(0xFF22222A))) {
-                val img = show.backdrop.ifBlank { show.poster }
-                if (img.isNotBlank()) AsyncImage(model = img, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
-                else provider?.let { DrawableImage(it.icon, Modifier.fillMaxSize(), ContentScale.Crop) }
+private fun ShowCard(show: Show, provider: TvApp?, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Tile(onClick = onClick, modifier = modifier.width(210.dp).height(118.dp), corner = 14, container = Color(0xFF1C1C22), focusedContainer = Color(0xFF2A2A33)) {
+        Box(Modifier.fillMaxSize()) {
+            val img = show.backdrop.ifBlank { show.poster }
+            if (img.isNotBlank()) {
+                AsyncImage(model = img, contentDescription = show.title, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+            } else {
+                provider?.banner?.let { DrawableImage(it, Modifier.fillMaxSize(), ContentScale.Crop) }
             }
-            Spacer(Modifier.width(12.dp))
-            Column {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    provider?.let { DrawableImage(it.icon, Modifier.size(12.dp).clip(RoundedCornerShape(3.dp))) ; Spacer(Modifier.width(5.dp)) }
-                    Text((provider?.label ?: show.providerLabel).uppercase(), color = Color(0x99FFFFFF), fontSize = 10.sp, fontFamily = UiFont,
-                        fontWeight = FontWeight.SemiBold, letterSpacing = 1.sp, maxLines = 1)
-                }
-                Spacer(Modifier.height(3.dp))
-                Text(show.title, color = Color.White, fontSize = 15.sp, fontFamily = UiFont, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            }
+            Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0.45f to Color(0x00000000), 1f to Color(0xE6000000))))
+            provider?.icon?.let { DrawableImage(it, Modifier.padding(8.dp).size(20.dp).clip(RoundedCornerShape(5.dp)).align(Alignment.TopStart)) }
+            Text(show.title, color = Palette.text, fontSize = 14.sp, fontFamily = UiFont, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.align(Alignment.BottomStart).padding(horizontal = 10.dp, vertical = 8.dp))
         }
     }
 }
@@ -490,17 +480,15 @@ fun weatherIcon(w: WeatherNow): ImageVector = when (w.code) {
 // ------------------------------------------------------------------ menus
 
 @Composable
-private fun NightMenu(config: Config, onClose: () -> Unit, onToggleNight: () -> Unit, onSleep: (Int) -> Unit, onCancelSleep: () -> Unit) {
+private fun NightMenu(config: Config, onClose: () -> Unit, onSleep: (Int) -> Unit, onCancelSleep: () -> Unit) {
     val focus = remember { FocusRequester() }
     LaunchedEffect(Unit) { try { focus.requestFocus() } catch (e: Exception) {} }
     Column(
         Modifier.padding(top = 80.dp, end = 40.dp).width(260.dp).clip(RoundedCornerShape(20.dp)).background(Color(0xE6141418)).padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Text("Night", color = Palette.text, fontSize = 18.sp, fontFamily = UiFont, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(start = 6.dp, bottom = 4.dp))
-        MenuRow(if (config.nightMode) "Night mode: on" else "Night mode: off", onToggleNight, Modifier.focusRequester(focus))
-        Text("Sleep timer", color = Palette.textFaint, fontSize = 12.sp, modifier = Modifier.padding(start = 6.dp, top = 6.dp))
-        listOf(15, 30, 45, 60, 90).forEach { m -> MenuRow("$m minutes", { onSleep(m) }) }
+        Text("Sleep timer", color = Palette.text, fontSize = 18.sp, fontFamily = UiFont, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(start = 6.dp, bottom = 4.dp))
+        listOf(15, 30, 45, 60, 90).forEachIndexed { i, m -> MenuRow("$m minutes", { onSleep(m) }, if (i == 0) Modifier.focusRequester(focus) else Modifier) }
         if (config.sleepAt > 0L) MenuRow("Cancel timer", onCancelSleep)
         MenuRow("Close", onClose)
     }

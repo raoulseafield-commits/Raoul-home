@@ -42,9 +42,10 @@ data class Show(
     }
 }
 
-data class Profile(val name: String, val shows: List<Show>) {
+data class Profile(val name: String, val shows: List<Show>, val appProfile: Int = 0) {
     fun toJson(): JSONObject = JSONObject()
         .put("name", name)
+        .put("appProfile", appProfile)
         .put("shows", JSONArray().apply { shows.forEach { put(it.toJson()) } })
 
     companion object {
@@ -52,7 +53,8 @@ data class Profile(val name: String, val shows: List<Show>) {
             val arr = o.optJSONArray("shows") ?: JSONArray()
             return Profile(
                 name = o.optString("name", "Profile"),
-                shows = (0 until arr.length()).map { Show.fromJson(arr.getJSONObject(it)) }
+                shows = (0 until arr.length()).map { Show.fromJson(arr.getJSONObject(it)) },
+                appProfile = o.optInt("appProfile", 0).coerceIn(0, 4)
             )
         }
     }
@@ -81,6 +83,8 @@ data class Config(
     val lofiRadio: Boolean = true,
     /** How loud the lofi radio plays: 1 whisper, 2 soft, 3 medium. Always well below the TV volume. */
     val lofiLevel: Int = 2,
+    /** Box on turns the TV on (HDMI-CEC One Touch Play). */
+    val tvFollowsBox: Boolean = true,
     /** Epoch millis when the sleep timer fires, 0 = off. */
     val sleepAt: Long = 0L
 ) {
@@ -98,6 +102,7 @@ data class Config(
         .put("nightMode", nightMode)
         .put("lofiRadio", lofiRadio)
         .put("lofiLevel", lofiLevel)
+        .put("tvFollowsBox", tvFollowsBox)
         .put("sleepAt", sleepAt)
 
     companion object {
@@ -117,9 +122,10 @@ data class Config(
                 longitude = o.optDouble("longitude", d.longitude),
                 use24h = o.optBoolean("use24h", d.use24h),
                 showSeconds = o.optBoolean("showSeconds", d.showSeconds),
-                nightMode = o.optBoolean("nightMode", d.nightMode),
+                nightMode = false,   // night mode was removed
                 lofiRadio = o.optBoolean("lofiRadio", d.lofiRadio),
                 lofiLevel = o.optInt("lofiLevel", d.lofiLevel).coerceIn(1, 3),
+                tvFollowsBox = o.optBoolean("tvFollowsBox", true),
                 sleepAt = o.optLong("sleepAt", 0L)
             )
         }
