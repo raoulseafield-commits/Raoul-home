@@ -2,6 +2,10 @@ name: Probe (photos + streaming data)
 
 on:
   workflow_dispatch:
+    inputs:
+      script:
+        description: probe script
+        default: tools/probe.py
 
 permissions:
   contents: write
@@ -12,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run probe
-        run: python3 tools/probe.py
+        run: python3 ${{ github.event.inputs.script || 'tools/probe.py' }}
       - name: Publish results to ci-results branch
         run: |
           cd ci-out
