@@ -37,6 +37,17 @@ jobs:
           disable-animations: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           script: bash tools/tv_check.sh
+      - name: Build Mi Remote debug
+        run: ./gradlew --no-daemon :remote:assembleDebug
+      - name: Run Mi Remote on a phone emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: bash tools/phone_check.sh
       - name: Publish results to ci-tv branch
         if: always()
         run: |
