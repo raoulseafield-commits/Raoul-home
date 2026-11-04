@@ -1,0 +1,212 @@
+[
+ {
+  "title": "The Starry Night",
+  "artist": "Vincent van Gogh",
+  "mood": "night",
+  "file": "art/van_gogh_the_starry_night_moma.jpg"
+ },
+ {
+  "title": "Starry Night Over the Rh\u00f4ne",
+  "artist": "Vincent van Gogh",
+  "mood": "night",
+  "file": "art/starry_night_over_the_rhone_van_gogh_188.jpg"
+ },
+ {
+  "title": "Caspar David Friedrich Moonrise over the Sea",
+  "artist": "Caspar David Friedrich",
+  "mood": "night",
+  "file": "art/caspar_david_friedrich_moonrise_over_the.jpg"
+ },
+ {
+  "title": "Caspar David Friedrich Two Men Contemplating the Moon",
+  "artist": "Caspar David Friedrich",
+  "mood": "night",
+  "file": "art/caspar_david_friedrich_two_men_contempla.jpg"
+ },
+ {
+  "title": "Whistler Nocturne Blue and Silver Chelsea",
+  "artist": "James McNeill Whistler",
+  "mood": "fog",
+  "file": "art/whistler_nocturne_blue_and_silver_chelse.jpg"
+ },
+ {
+  "title": "Atkinson Grimshaw Reflections on the Thames Westminster",
+  "artist": "John Atkinson Grimshaw",
+  "mood": "night",
+  "file": "art/atkinson_grimshaw_reflections_on_the_tha.jpg"
+ },
+ {
+  "title": "Van Gogh Wheatfield with Crows",
+  "artist": "Vincent van Gogh",
+  "mood": "halloween",
+  "file": "art/van_gogh_wheatfield_with_crows.jpg"
+ },
+ {
+  "title": "Caillebotte Paris Street Rainy Day",
+  "artist": "Gustave Caillebotte",
+  "mood": "rain",
+  "file": "art/caillebotte_paris_street_rainy_day.jpg"
+ },
+ {
+  "title": "Pissarro Boulevard Montmartre at Night",
+  "artist": "Camille Pissarro",
+  "mood": "rain",
+  "file": "art/pissarro_boulevard_montmartre_at_night.jpg"
+ },
+ {
+  "title": "Hokusai The Great Wave off Kanagawa",
+  "artist": "Katsushika Hokusai",
+  "mood": "storm",
+  "file": "art/hokusai_the_great_wave_off_kanagawa.jpg"
+ },
+ {
+  "title": "Aivazovsky The Ninth Wave",
+  "artist": "Ivan Aivazovsky",
+  "mood": "storm",
+  "file": "art/aivazovsky_the_ninth_wave.jpg"
+ },
+ {
+  "title": "Turner Snow Storm Steam-Boat off a Harbour's Mouth",
+  "artist": "J. M. W. Turner",
+  "mood": "storm",
+  "file": "art/turner_snow_storm_steam_boat_off_a_harbo.jpg"
+ },
+ {
+  "title": "Thomas Cole The Oxbow",
+  "artist": "Thomas Cole",
+  "mood": "cloudy",
+  "file": "art/thomas_cole_the_oxbow.jpg"
+ },
+ {
+  "title": "Bruegel Hunters in the Snow",
+  "artist": "Pieter Bruegel the Elder",
+  "mood": "snow",
+  "file": "art/bruegel_hunters_in_the_snow.jpg"
+ },
+ {
+  "title": "Monet The Magpie",
+  "artist": "Claude Monet",
+  "mood": "snow",
+  "file": "art/monet_the_magpie.jpg"
+ },
+ {
+  "title": "Hiroshige Evening Snow at Kanbara",
+  "artist": "Utagawa Hiroshige",
+  "mood": "snow",
+  "file": "art/hiroshige_evening_snow_at_kanbara.jpg"
+ },
+ {
+  "title": "Caspar David Friedrich The Sea of Ice",
+  "artist": "Caspar David Friedrich",
+  "mood": "snow",
+  "file": "art/caspar_david_friedrich_the_sea_of_ice.jpg"
+ },
+ {
+  "title": "Monet Haystacks snow effect",
+  "artist": "Claude Monet",
+  "mood": "snow",
+  "file": "art/monet_haystacks_snow_effect.jpg"
+ },
+ {
+  "title": "Monet Houses of Parliament London fog",
+  "artist": "Claude Monet",
+  "mood": "fog",
+  "file": "art/monet_houses_of_parliament_london_fog.jpg"
+ },
+ {
+  "title": "Monet Impression Sunrise",
+  "artist": "Claude Monet",
+  "mood": "fog",
+  "file": "art/monet_impression_sunrise.jpg"
+ },
+ {
+  "title": "Shishkin Morning in a Pine Forest",
+  "artist": "Ivan Shishkin",
+  "mood": "fog",
+  "file": "art/shishkin_morning_in_a_pine_forest.jpg"
+ },
+ {
+  "title": "Constable The Hay Wain",
+  "artist": "John Constable",
+  "mood": "cloudy",
+  "file": "art/constable_the_hay_wain.jpg"
+ },
+ {
+  "title": "Turner The Fighting Temeraire",
+  "artist": "J. M. W. Turner",
+  "mood": "cloudy",
+  "file": "art/turner_the_fighting_temeraire.jpg"
+ },
+ {
+  "title": "Hokusai Ejiri in Suruga Province",
+  "artist": "Katsushika Hokusai",
+  "mood": "cloudy",
+  "file": "art/hokusai_ejiri_in_suruga_province.jpg"
+ },
+ {
+  "title": "Monet Poppy Field Argenteuil",
+  "artist": "Claude Monet",
+  "mood": "sunny",
+  "file": "art/monet_poppy_field_argenteuil.jpg"
+ },
+ {
+  "title": "Monet Water Lilies Nympheas",
+  "artist": "Claude Monet",
+  "mood": "sunny",
+  "file": "art/monet_water_lilies_nympheas.jpg"
+ },
+ {
+  "title": "Van Gogh Wheat Field with Cypresses",
+  "artist": "Vincent van Gogh",
+  "mood": "sunny",
+  "file": "art/van_gogh_wheat_field_with_cypresses.jpg"
+ },
+ {
+  "title": "Van Gogh The Harvest 1888",
+  "artist": "Vincent van Gogh",
+  "mood": "sunny",
+  "file": "art/van_gogh_the_harvest_1888.jpg"
+ },
+ {
+  "title": "Hokusai Fine Wind Clear Morning Red Fuji",
+  "artist": "Katsushika Hokusai",
+  "mood": "sunny",
+  "file": "art/hokusai_fine_wind_clear_morning_red_fuji.jpg"
+ },
+ {
+  "title": "Bierstadt Among the Sierra Nevada California",
+  "artist": "Albert Bierstadt",
+  "mood": "sunny",
+  "file": "art/bierstadt_among_the_sierra_nevada_califo.jpg"
+ },
+ {
+  "title": "Frederic Edwin Church Twilight in the Wilderness",
+  "artist": "Frederic Edwin Church",
+  "mood": "sunny",
+  "file": "art/frederic_edwin_church_twilight_in_the_wi.jpg"
+ },
+ {
+  "title": "Frederic Edwin Church Heart of the Andes",
+  "artist": "Frederic Edwin Church",
+  "mood": "sunny",
+  "file": "art/frederic_edwin_church_heart_of_the_andes.jpg"
+ },
+ {
+  "title": "Monet Haystacks end of summer",
+  "artist": "Claude Monet",
+  "mood": "sunny",
+  "file": "art/monet_haystacks_end_of_summer.jpg"
+ },
+ {
+  "title": "Van Gogh Almond Blossoms",
+  "artist": "Vincent van Gogh",
+  "mood": "sunny",
+  "file": "art/van_gogh_almond_blossoms.jpg"
+ },
+ {
+  "title": "Bierstadt Rocky Mountains Lander's Peak",
+  "artist": "Albert Bierstadt",
+  "mood": "sunny",
+  "file": "art/bierstadt_rocky_mountains_lander_s_peak.jpg"
+ }
+]

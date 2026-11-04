@@ -138,9 +138,10 @@ class Ambient(private val context: Context, private val withRadio: Boolean) {
     private fun pickNext(): Art? {
         if (queue.isEmpty()) {
             val all = ArtRepo.all(context)
-            val matching = all.filter { it.mood == mood }
+            val family = when (mood) { "halloween" -> setOf("halloween", "night", "storm"); "christmas" -> setOf("snow"); "storm" -> setOf("storm", "rain"); else -> setOf(mood) }
+            val matching = all.filter { it.mood in family }
             // mostly pictures that match the weather/season, sprinkled with the rest
-            queue = (matching.shuffled() + all.filter { it.mood != mood }.shuffled().take(maxOf(3, matching.size / 2))).toMutableList()
+            queue = (matching.shuffled() + all.filter { it.mood !in family }.shuffled().take(maxOf(3, matching.size / 2))).toMutableList()
             if (queue.isEmpty()) return null
         }
         return queue.removeAt(0)
