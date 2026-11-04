@@ -283,6 +283,13 @@ private fun SystemSection() {
     LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp), contentPadding = PaddingValues(bottom = 40.dp)) {
         item { SectionTitle("SCREENSAVER") }
         item {
+            val cfg = za.co.dipixel.launcher.data.ConfigStore.load(context)
+            var on by remember { mutableStateOf(cfg.lofiRadio) }
+            CheckRow("Lofi radio with the art screensaver", on, {
+                on = !on; za.co.dipixel.launcher.data.ConfigStore.update(context) { it.copy(lofiRadio = on) }
+            }, sub = "OK skips to a new song and picture")
+        }
+        item {
             var status by remember { mutableStateOf("Paintings saved on the box: ${za.co.dipixel.launcher.art.ArtRepo.cachedCount(context)} (plus the built-in set)") }
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(status, color = Palette.textFaint, fontSize = 13.sp)

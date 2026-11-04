@@ -112,8 +112,14 @@ object Hub {
         return nowPkg
     }
 
-    fun startScreensaver(context: Context): Boolean =
-        Shell.run(context, "am start -n com.android.systemui/.Somnambulator")?.contains("Error") == false
+    fun startScreensaver(context: Context): Boolean = try {
+        context.startActivity(Intent(context, za.co.dipixel.launcher.art.AmbientActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)); true
+    } catch (e: Exception) {
+        Shell.run(context, "am start -n ${context.packageName}/.art.AmbientActivity")?.contains("Error") == false
+    }
+
+    /** Next song + picture when art mode is showing. */
+    fun skipAmbient(context: Context): Boolean = pressKey(context, KeyEvent.KEYCODE_DPAD_CENTER)
 
     // ---- shows ----
     fun playShow(context: Context, show: Show): String {
@@ -267,6 +273,8 @@ class HubServer(private val context: Context) : NanoHTTPD(Hub.PORT) {
                 json(ok)
             }
             "/screensaver" -> json(JSONObject().put("ok", Hub.startScreensaver(context)))
+            "/screensaver/skip" -> json(JSONObject().put("ok", Hub.skipAmbient(context)))
+            "/lofi" -> { ConfigStore.update(context) { it.copy(lofiRadio = body.optBoolean("on", true)) }; json(ok) }
             "/art/refresh" -> { ArtRepo.refreshNow(context); json(ok) }
             "/show/add" -> {
                 val show = Show(
@@ -336,6 +344,7 @@ class HubServer(private val context: Context) : NanoHTTPD(Hub.PORT) {
             .put("profiles", JSONArray(c.profiles.map { it.name }))
             .put("active", c.activeProfile)
             .put("night", c.nightMode)
+            .put("lofi", c.lofiRadio)
             .put("sleepAt", c.sleepAt)
             .put("now", if (now != null) JSONObject().put("pkg", now.packageName).put("label", now.label) else JSONObject.NULL)
             .put("onHome", nowPkg == context.packageName)

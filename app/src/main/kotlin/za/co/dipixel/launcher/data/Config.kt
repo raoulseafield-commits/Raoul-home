@@ -77,6 +77,8 @@ data class Config(
     val use24h: Boolean = true,
     val showSeconds: Boolean = false,
     val nightMode: Boolean = false,
+    /** Lofi radio plays with the art screensaver. */
+    val lofiRadio: Boolean = true,
     /** Epoch millis when the sleep timer fires, 0 = off. */
     val sleepAt: Long = 0L
 ) {
@@ -92,6 +94,7 @@ data class Config(
         .put("use24h", use24h)
         .put("showSeconds", showSeconds)
         .put("nightMode", nightMode)
+        .put("lofiRadio", lofiRadio)
         .put("sleepAt", sleepAt)
 
     companion object {
@@ -112,6 +115,7 @@ data class Config(
                 use24h = o.optBoolean("use24h", d.use24h),
                 showSeconds = o.optBoolean("showSeconds", d.showSeconds),
                 nightMode = o.optBoolean("nightMode", d.nightMode),
+                lofiRadio = o.optBoolean("lofiRadio", d.lofiRadio),
                 sleepAt = o.optLong("sleepAt", 0L)
             )
         }

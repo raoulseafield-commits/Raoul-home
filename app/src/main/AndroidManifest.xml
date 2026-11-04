@@ -74,6 +74,14 @@
 
         <receiver android:name=".night.SleepReceiver" android:exported="false" />
 
+        <activity
+            android:name=".art.AmbientActivity"
+            android:exported="false"
+            android:launchMode="singleTask"
+            android:excludeFromRecents="true"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.MiBoxLauncher" />
+
         <service
             android:name=".hub.HubService"
             android:exported="false"

@@ -66,6 +66,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
     implementation("org.nanohttpd:nanohttpd:2.3.1")
     implementation("io.coil-kt:coil-compose:2.7.0")
+    implementation("androidx.media3:media3-exoplayer:1.4.1")
     implementation("androidx.palette:palette-ktx:1.0.0")
     implementation("dev.mobile:dadb:1.2.7") {
         // dadb's published pom leaks its test libraries into runtime

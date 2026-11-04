@@ -106,7 +106,7 @@ TV commands: tv_control. Opening an app: open_app. "What's on" or "what am I wat
             .put(fn("play_music", "Play a song, artist, album or playlist on Spotify.", JSONObject().put("query", str("Song, artist or playlist")), listOf("query")))
             .put(fn("tv_control", "Control the TV.",
                 JSONObject().put("action", JSONObject().put("type", "string").put("enum", JSONArray(listOf(
-                    "pause", "play", "volume_up", "volume_down", "mute", "home", "back", "next", "previous", "sleep_timer", "cancel_sleep", "night_mode_on", "night_mode_off"))))
+                    "pause", "play", "volume_up", "volume_down", "mute", "home", "back", "next", "previous", "sleep_timer", "cancel_sleep", "night_mode_on", "night_mode_off", "screensaver", "next_lofi_song"))))
                     .put("minutes", JSONObject().put("type", "integer")), listOf("action")))
             .put(fn("open_app", "Open an app on the TV.", JSONObject().put("name", str("App name")), listOf("name")))
             .put(fn("whats_on", "Which app is on the TV screen right now.", null, emptyList()))
@@ -229,6 +229,8 @@ TV commands: tv_control. Opening an app: open_app. "What's on" or "what am I wat
         "cancel_sleep" -> { Sleep.cancel(context); ConfigStore.update(context) { it.copy(sleepAt = 0L) }; true }
         "night_mode_on" -> { ConfigStore.update(context) { it.copy(nightMode = true) }; true }
         "night_mode_off" -> { ConfigStore.update(context) { it.copy(nightMode = false) }; true }
+        "screensaver" -> Hub.startScreensaver(context)
+        "next_lofi_song" -> Hub.skipAmbient(context)
         else -> false
     }
 

@@ -34,6 +34,7 @@ import androidx.compose.material.icons.rounded.Apps
 import androidx.compose.material.icons.rounded.Bedtime
 import androidx.compose.material.icons.rounded.Cloud
 import androidx.compose.material.icons.rounded.NightsStay
+import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Thunderstorm
@@ -201,6 +202,11 @@ fun HomeScreen(
                 }
                 item {
                     DockGlyph(Icons.Rounded.Apps, onOpenAllApps, if (favourites.isEmpty()) Modifier.focusRequester(dockFocus) else Modifier)
+                }
+                item {
+                    DockGlyph(Icons.Rounded.Palette, {
+                        context.startActivity(android.content.Intent(context, za.co.dipixel.launcher.art.AmbientActivity::class.java))
+                    })
                 }
                 item { DockGlyph(Icons.Rounded.Settings, onOpenSettings) }
             }
