@@ -254,10 +254,13 @@ TV commands: tv_control. Opening an app: open_app. "What's on" or "what am I wat
     }
 
     private fun describe(context: Context, t: JustWatch.Title): JSONObject {
-        val mine = t.streaming.filter { subscribed(context, it) && serviceApp(context, it.service) != null }.map { it.service }
-        val others = t.streaming.map { it.service }.filter { it !in mine }
+        val subbed = t.streaming.filter { subscribed(context, it) }.map { it.service }.distinct()
+        val mine = subbed.filter { serviceApp(context, it) != null }
+        val noApp = subbed.filter { it !in mine }
+        val others = t.streaming.map { it.service }.distinct().filter { it !in subbed }
         return JSONObject().put("title", t.title).put("year", t.year).put("type", t.kind)
             .put("on_your_services", JSONArray(mine))
+            .put("subscribed_but_app_not_installed", JSONArray(noApp))
             .put("streaming_elsewhere", JSONArray(others))
             .put("rent_or_buy", JSONArray(t.rentBuy.map { it.service }))
             .put("about", t.description.take(200))
@@ -277,7 +280,9 @@ TV commands: tv_control. Opening an app: open_app. "What's on" or "what am I wat
             ?: return JSONObject().put("ok", false).put("error", "Couldn't find $title")
         val options = t.streaming.filter { subscribed(context, it) }.mapNotNull { o -> serviceApp(context, o.service)?.let { o to it } }
         val pick = options.firstOrNull { prefer.isNotBlank() && norm(it.first.service).contains(norm(prefer)) } ?: options.firstOrNull()
-            ?: return JSONObject().put("ok", false).put("error", "${t.title} isn't on your services")
+            ?: return JSONObject().put("ok", false).put("error",
+                    t.streaming.firstOrNull { subscribed(context, it) }?.let { "${t.title} is on ${it.service}, but that app isn't installed on the TV" }
+                        ?: "${t.title} isn't on your services")
                 .put("streaming_elsewhere", JSONArray(t.streaming.map { it.service })).put("rent_or_buy", JSONArray(t.rentBuy.map { it.service }))
         val (offer, app) = pick
         val ok = launch(context, offer, app)
@@ -312,7 +317,7 @@ TV commands: tv_control. Opening an app: open_app. "What's on" or "what am I wat
         if (yes.matches(t) && s.last.isNotEmpty()) {
             val first = s.last.first()
             val r = playTitle(context, s, first.title, first.year, "")
-            return Reply(if (r.optBoolean("ok")) "Playing ${first.title} on ${r.optString("playing_on")}." else "${first.title} isn't on Netflix or DStv, sorry.", cards)
+            return Reply(if (r.optBoolean("ok")) "Playing ${first.title} on ${r.optString("playing_on")}." else r.optString("error", "${first.title} isn't on your services, sorry.") + ".", cards)
         }
         val find = Regex("^(?:what'?s|what is|whats)? ?(?:the )?(latest|newest|new|last) (.+?)(?: movie| film| series| show)?$").find(t)
             ?: Regex("^(?:where can i watch|where is|is|find|search for|look for|can i watch) (.+?)(?: on (?:netflix|dstv|showmax))?(?: streaming| available)?$").find(t)
@@ -328,12 +333,13 @@ TV commands: tv_control. Opening an app: open_app. "What's on" or "what am I wat
             val best = list.first()
             list.take(3).forEach { cards.put(card(context, it)) }
             val d = describe(context, best)
-            val mine = d.getJSONArray("on_your_services"); val elsewhere = d.getJSONArray("streaming_elsewhere"); val rent = d.getJSONArray("rent_or_buy")
+            val mine = d.getJSONArray("on_your_services"); val noApp = d.getJSONArray("subscribed_but_app_not_installed"); val elsewhere = d.getJSONArray("streaming_elsewhere"); val rent = d.getJSONArray("rent_or_buy")
             val name = "${best.title}${if (best.year > 0) " (${best.year})" else ""}"
             val text = when {
                 mine.length() > 0 -> "I found $name. It's on ${mine.getString(0)}. Want me to play it?"
+                noApp.length() > 0 -> "$name is on ${noApp.getString(0)}, but the ${noApp.getString(0)} app isn't installed on the TV."
                 elsewhere.length() > 0 -> "$name is streaming on ${elsewhere.getString(0)}, which you don't have."
-                rent.length() > 0 -> "$name isn't on Netflix or DStv yet. You can rent or buy it on ${rent.getString(0)}."
+                rent.length() > 0 -> "$name isn't on ${subscriptions(context).joinToString(" or ")} yet. You can rent or buy it on ${rent.getString(0)}."
                 else -> "I found $name, but it isn't available to stream in South Africa yet."
             }
             return Reply(text, cards)

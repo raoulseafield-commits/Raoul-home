@@ -62,7 +62,7 @@ done
 cat $OUT/agent.txt
 
 log "art + lofi mode"
-timeout 20 adb shell am start -n $PKG/.art.AmbientActivity; sleep 12; shot 08_art_mode; timeout 10 adb shell input keyevent 23; sleep 3; shot 09_art_skip
+curl -s -m 40 -X POST localhost:8765/screensaver "${H[@]}" -d '{}' > $OUT/screensaver.json; sleep 12; shot 08_art_mode; timeout 10 adb shell input keyevent 23; sleep 3; shot 09_art_skip
 adb shell input keyevent 4; sleep 3
 
 adb shell cat /data/local/tmp/mitv_injector.log > $OUT/injector.log 2>&1

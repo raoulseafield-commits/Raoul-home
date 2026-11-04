@@ -169,7 +169,7 @@ fun HomeScreen(
             if (profile.shows.isNotEmpty()) {
                 LazyRow(
                     modifier = Modifier.fillMaxWidth().onFocusChanged { if (!it.hasFocus) heroShow = null },
-                    horizontalArrangement = Arrangement.spacedBy(14.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
                     contentPadding = PaddingValues(start = 40.dp, end = 40.dp, top = 14.dp, bottom = 12.dp)
                 ) {
                     itemsIndexed(profile.shows, key = { i, s -> s.title + i }) { _, show ->
@@ -392,7 +392,7 @@ private fun GlassCircle(icon: ImageVector, selected: Boolean = false, onClick: (
 @Composable
 private fun GlassShowCard(show: Show, provider: TvApp?, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Tile(
-        onClick = onClick, modifier = modifier.width(300.dp).height(74.dp), corner = 16,
+        onClick = onClick, modifier = modifier.width(282.dp).height(74.dp), corner = 16,
         container = Color(0x66101016), focusedContainer = Color(0x99202028), focusedScale = 1.06f
     ) {
         Row(Modifier.fillMaxSize().border(1.dp, Color(0x1FFFFFFF), RoundedCornerShape(16.dp)).padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
