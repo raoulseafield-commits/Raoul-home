@@ -28,6 +28,7 @@ object Autoplay {
     @Volatile var trace: List<String> = emptyList()
         private set
     private val log = ArrayList<String>()
+    fun noteExternal(s: String) = note(s)
     private fun note(s: String) { synchronized(log) { log += "${System.currentTimeMillis() / 1000 % 100000} $s"; while (log.size > 40) log.removeAt(0); trace = log.toList() } }
 
     // ---------------- media sessions ----------------

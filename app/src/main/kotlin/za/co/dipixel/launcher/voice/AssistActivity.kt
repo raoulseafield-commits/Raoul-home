@@ -86,10 +86,17 @@ class AssistActivity : ComponentActivity() {
             }
         }
         setContent { Overlay() }
-        startListening()
+        val said = intent.getStringExtra(EXTRA_SAID)
+        if (said.isNullOrBlank()) startListening() else ask(said)
     }
 
-    override fun onNewIntent(intent: Intent) { super.onNewIntent(intent); startListening() }
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        val said = intent.getStringExtra(EXTRA_SAID)
+        if (said.isNullOrBlank()) startListening() else ask(said)
+    }
+
+    companion object { const val EXTRA_SAID = "said" }
 
     private fun startListening() {
         stage = Stage.Listening

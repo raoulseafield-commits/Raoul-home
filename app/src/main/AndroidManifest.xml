@@ -85,28 +85,15 @@
             </intent-filter>
         </activity>
 
-        <!-- Assistant button on the remote: Google listens, the Mi TV agent acts -->
+        <!-- Mi TV agent card on the TV (opened when Mi TV takes over from Google, or from the home screen) -->
         <activity
             android:name=".voice.AssistActivity"
-            android:exported="true"
+            android:exported="false"
             android:launchMode="singleTask"
             android:taskAffinity="za.co.dipixel.launcher.assist"
             android:excludeFromRecents="true"
             android:theme="@style/Theme.MiTV.Assist"
-            android:screenOrientation="landscape">
-            <intent-filter>
-                <action android:name="android.intent.action.ASSIST" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VOICE_COMMAND" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.SEARCH_LONG_PRESS" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
+            android:screenOrientation="landscape" />
 
         <receiver android:name=".night.SleepReceiver" android:exported="false" />
 

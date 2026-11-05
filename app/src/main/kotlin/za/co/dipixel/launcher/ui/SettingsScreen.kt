@@ -205,12 +205,11 @@ private fun AgentSection(apps: List<TvApp>) {
             var mode by remember { mutableStateOf(za.co.dipixel.launcher.data.ConfigStore.load(context).assistant) }
             fun set(m: String) {
                 mode = m; za.co.dipixel.launcher.data.ConfigStore.update(context) { it.copy(assistant = m) }
-                Thread { za.co.dipixel.launcher.hub.SystemTune.applyAssistant(context) }.start()
             }
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                CheckRow("Mi TV agent (recommended)", mode == "mitv", { set("mitv") },
-                    sub = "Google listens, Mi TV plays it: Spotify first for songs, the right app for shows")
-                CheckRow("Google Assistant", mode == "google", { set("google") }, sub = "The stock Google Assistant")
+                CheckRow("Google listens, Mi TV steps in (recommended)", mode == "handoff", { set("handoff") },
+                    sub = "If Google can't play what you asked (a show on DStv or Netflix), the Mi TV agent plays it")
+                CheckRow("Google Assistant only", mode == "google", { set("google") })
             }
         }
         item { Spacer(Modifier.height(10.dp)); SectionTitle("APPS YOU PAY FOR") }

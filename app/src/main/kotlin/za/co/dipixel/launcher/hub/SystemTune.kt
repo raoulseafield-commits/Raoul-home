@@ -57,20 +57,20 @@ object SystemTune {
      */
     fun applyAssistant(context: Context) {
         val pkg = context.packageName
-        val mine = ConfigStore.load(context).assistant == "mitv"
+        val mine = false   // the box needs Google on the Assistant button; Mi TV listens in instead (AssistantWatch)
         val google = listOf("com.google.android.katniss", "com.google.android.apps.tv.assistant")
             .firstOrNull { Shell.run(context, "pm list packages $it")?.contains("package:$it") == true } ?: "com.google.android.katniss"
         val out = if (mine) Shell.run(context,
-            "cmd role add-role-holder --user 0 android.app.role.ASSISTANT $pkg 0 2>&1; settings put secure assistant $pkg/$pkg.voice.AssistActivity; cmd role get-role-holders --user 0 android.app.role.ASSISTANT")
+            "cmd role add-role-holder --user 0 android.app.role.ASSISTANT $pkg 0 2>&1; settings put secure assistant $pkg/$pkg.voice.AssistActivity; dumpsys role | grep -A3 ASSISTANT | grep -i holders")
         else Shell.run(context,
-            "cmd role remove-role-holder --user 0 android.app.role.ASSISTANT $pkg 0 2>&1; cmd role add-role-holder --user 0 android.app.role.ASSISTANT $google 0 2>&1; cmd role get-role-holders --user 0 android.app.role.ASSISTANT")
+            "settings delete secure assistant; cmd role remove-role-holder --user 0 android.app.role.ASSISTANT $pkg 0 2>&1; cmd role add-role-holder --user 0 android.app.role.ASSISTANT $google 0 2>&1; dumpsys role | grep -A3 ASSISTANT | grep -i holders")
         assistantResult = (out ?: "adb not ready").trim().lines().lastOrNull()?.take(80) ?: ""
         context.getSharedPreferences("tune", Context.MODE_PRIVATE).edit().putString("assistant", if (mine) "mitv" else "google").apply()
     }
     @Volatile var assistantResult = ""
 
     fun applyAssistantIfChanged(context: Context) {
-        val want = ConfigStore.load(context).assistant
+        val want = "google"
         if (context.getSharedPreferences("tune", Context.MODE_PRIVATE).getString("assistant", "") != want) applyAssistant(context)
     }
 

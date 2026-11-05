@@ -110,6 +110,8 @@ if ($a11y -notlike "*$me*") {
     & $adb shell settings put secure enabled_accessibility_services "$a11y" 2>&1 | Out-Null
     & $adb shell settings put secure accessibility_enabled 1 2>&1 | Out-Null
 }
+# the remote's Assistant button belongs to Google (Mi TV listens in and steps in when Google can't play it)
+& $adb shell "settings delete secure assistant; cmd role remove-role-holder --user 0 android.app.role.ASSISTANT $pkg 0; cmd role add-role-holder --user 0 android.app.role.ASSISTANT com.google.android.katniss 0" 2>&1 | Out-Null
 Log "Speed and TV power tweaks..."
 & $adb shell "settings put global window_animation_scale 0.5; settings put global transition_animation_scale 0.5; settings put global animator_duration_scale 0.5" 2>&1 | Out-Null
 & $adb shell "settings put global hdmi_control_enabled 1; settings put global hdmi_control_auto_device_off_enabled 1; settings put global hdmi_control_auto_wakeup_enabled 1" 2>&1 | Out-Null
